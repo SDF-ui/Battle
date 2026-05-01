@@ -1,0 +1,201 @@
+# =====================
+# Unity 自动生成及缓存目录
+# =====================
+/Library/
+/Temp/
+/Obj/
+/Build/
+/Builds/
+/Logs/
+/UserSettings/
+
+# =====================
+# 项目构建输出（Windows, Android, macOS 等）
+# =====================
+/Release/
+/Launcher/
+/unityLibrary/
+/*.apk
+/*.aab
+/*.exe
+/*.dmg
+/*.pkg
+/*.msi
+
+# =====================
+# 资源数据库 & 资产串行化缓存
+# =====================
+/Assets/AssetStoreTools*
+/AssetStoreCache/
+/Assets/AssetStoreCache/
+/ProjectSettings/GraphicsSettings.asset.bak
+/ProjectSettings/ProjectVersion.txt.bak
+/Library/ArtifactDB
+/Library/PlayerDataCache/
+/Library/Bee/
+/Library/PackageCache/*/.Runtime/
+/Library/PackageCache/*/.cache/
+
+# =====================
+# Burst 编译器缓存及运行时
+# =====================
+/Library/PackageCache/com.unity.burst@*/.Runtime/
+/BurstCache/
+/Assets/BurstCache/
+
+# =====================
+# 资源生成文件
+# =====================
+*.resS
+*.ress
+*.sharedAssets
+*.asset
+*.meta.backup
+*.prefab.bak
+*.unity.bak
+
+# =====================
+# IDE 及编辑器配置
+# =====================
+/.vs/
+/.idea/
+/*.csproj
+/*.sln
+/*.userprefs
+/*.DotSettings
+/*.DotSettings.user
+/Assembly-CSharp.csproj
+/Assembly-CSharp-firstpass.csproj
+/Assembly-CSharp-Editor.csproj
+/Assembly-CSharp-Editor-firstpass.csproj
+
+# =====================
+# Rider 特别文件
+# =====================
+/.idea/
+/*.sln.iml
+/*.DotSettings
+
+# =====================
+# 版本控制与构建工具临时文件
+# =====================
+/.git/
+/.gitattributes
+# /.gitignore
+/.gitmodules
+/.gitkeep
+/.git/
+/.github/
+/*.log
+/*.pid
+/*.pid.lock
+/*.swp
+/*.swo
+*~
+
+# =====================
+# macOS 系统文件
+# =====================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# =====================
+# Windows 系统文件
+# =====================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.exe
+
+# =====================
+# 测试与覆盖率报告
+# =====================
+/TestResults/
+/Coverage/
+/*.trx
+/*.coverage
+
+# =====================
+# 性能分析文件
+# =====================
+/FrameCaptures/
+/FrameDebugger/
+/MemoryCaptures/
+/ProfileData/
+/*.profiler
+
+# =====================
+# Unity 特定分析器
+# =====================
+/Telemetry/
+/UserInterfaceState.json
+/UserSettings/
+
+# =====================
+# 插件依赖与本地包缓存
+# =====================
+/Assets/Plugins/Android/*.aar
+/Assets/Plugins/iOS/*.a
+/Assets/Plugins/x86_64/*.dll
+/Assets/Plugins/x86/*.dll
+/Packages/com.unity.*/package.json
+/Packages/packages-lock.json
+
+# =====================
+# 以下为额外针对“大文件错误”的精准屏蔽
+# =====================
+# 精确匹配你推送时报错的文件/文件夹
+/Release/Windows/Battle_Data/resources.assets.resS
+/Library/PlayerDataCache/
+/Library/ArtifactDB
+/Library/PackageCache/com.unity.burst@1.8.18/.Runtime/
+
+# 所有 Burst 运行库（.dll, .so, .dylib）
+**/.Runtime/burst-llvm-*.dll
+**/.Runtime/*burst-llvm*.so
+**/.Runtime/*burst-llvm*.dylib
+**/.Runtime/*dsymutil*
+**/.Runtime/hostmac/
+**/.Runtime/hostlinux/
+**/.Runtime/hostwin/
+
+# 所有构建产生的 APK 与 AAR
+*.apk
+*.aar
+*.aab
+*/gradle/*/build/
+*/gradle/*/outputs/
+
+# Android 构建中间文件
+/launcher/build/
+/unityLibrary/build/
+/*/Temp/gradle/
+/*/Library/Bee/Android/
+/*/Temp/StagingArea/
+
+# Gradle 包装器（可选，是否需要忽略由团队决定）
+/gradle/wrapper/gradle-wrapper.jar
+/gradle/wrapper/gradle-wrapper.properties
+/gradlew
+/gradlew.bat
+
+# 日志文件
+*.log
+*.log.old
+*.log.*
+/Logs/
+
+# =====================
+# 其他常见 Unity 应忽略项
+# =====================
+/Assets/AddressableAssetsData/Generate/
+/Assets/StreamingAssets/aa/
+/Assets/StreamingAssets/UnityCache/
+/Assets/Resources/unity_builtin_extra
+/Analytics/
