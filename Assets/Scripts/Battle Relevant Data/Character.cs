@@ -139,6 +139,10 @@ public class Character : MonoBehaviour
     public int lionComboBuffRemaining = 0;
     public float lionComboBuffValue = 0.1f;
 
+    // ★ 威震山河：下次攻击连击率加成（与狮子搏兔分开追踪，但效果共用lionComboBuffValue）
+    public bool weiZhenBuffActive = false;
+    public bool weiZhenBuffConsumed = false;
+
     public bool lastAttackHit = false;
     public int lastDamageDealt = 0;
 
@@ -176,6 +180,7 @@ public class Character : MonoBehaviour
     public List<AttributeDebuff> attributeDebuffs = new List<AttributeDebuff>();
     public bool xunJieActive = false;
     public int xunJieRemaining = 0;
+    public float xunJieSpeedBonus = 0.20f; // 迅捷速度加成，默认20%
 
     // 慧灯永续命中加成
     public float huiDengHitBonus = 0f;
@@ -243,6 +248,15 @@ public class Character : MonoBehaviour
 
     // ★ 四象灵尊阵亡惩罚速度加成层数（每层+25%，最大值0.75）
     public float deathPenaltySpeedBonus = 0f;
+
+    // ★ 标记是否已消耗下次攻击加成（用于威震山河/袖里乾坤/禅心入梦/狮子搏兔的"施加攻击后消耗"）
+    public bool nextAttackBonusConsumed = false;
+
+    // ★ 本次暴击总伤害缓存（用于方寸山妙法承佑护盾计算，包含溅射伤害）
+    public int currentCritTotalDamage = 0;
+
+    // ★ 方寸山妙法承佑：暴击后下次攻击伤害加成层数（每层+20%，上限3层，攻击后消耗一层）
+    public int nextAttackDamageBonusStacks = 0;
 
     public int MaxHP => cachedMaxHP;
     public int MaxMP => cachedMaxMP;
@@ -320,7 +334,7 @@ public class Character : MonoBehaviour
             var debuff = attributeDebuffs.Find(d => d.attribute == "速度");
             if (debuff != null)
                 speed *= (1f - debuff.reducePercent);
-            return speed * (1f + 0.1f * windWingStacks + deathPenaltySpeedBonus) * GetSpeedMultiplier() * (xunJieActive ? 1.15f : 1f);
+            return speed * (1f + 0.1f * windWingStacks + deathPenaltySpeedBonus) * GetSpeedMultiplier() * (xunJieActive ? 1f + xunJieSpeedBonus : 1f);
         }
     }
 
@@ -336,7 +350,11 @@ public class Character : MonoBehaviour
             float hpPercent = MaxHP > 0 ? (float)currentHP / MaxHP : 1f;
             baiHuBonus = Mathf.Clamp01(1f - hpPercent);
         }
-        float multiplier = 1f + tempAttackBonus + (shengShengAttackBonusActive ? shengShengAttackBonusValue : 0f) + shadowDeathAttackBonusValue + baiHuBonus;
+
+        // ★ 妙法承佑：暴击后下次攻击伤害加成（每层+20%，上限60%）
+        float miaoFaBonus = faction == "FangCunShan" ? nextAttackDamageBonusStacks * 0.20f : 0f;
+
+        float multiplier = 1f + tempAttackBonus + (shengShengAttackBonusActive ? shengShengAttackBonusValue : 0f) + shadowDeathAttackBonusValue + baiHuBonus + miaoFaBonus;
 
         // ★ 四象灵尊杀伐阵攻击力加成（白虎存活时，所有四神兽受益）
         if (!string.IsNullOrEmpty(characterName) &&
@@ -357,14 +375,14 @@ public class Character : MonoBehaviour
 
     public float GetFinalCritRate()
     {
-        float raw = cachedCritRate + tempCritRateBonus + (mingXinActive ? mingXinCritRateBonus : 0f) + xianXianCritBonus;
+        float raw = cachedCritRate + tempCritRateBonus + (mingXinActive ? mingXinCritRateBonus : 0f) + xianXianCritBonus + chanXinCritBonus;
 
         if (nextCritRateBonusRemaining > 0)
             raw += nextCritRateBonus;
         var debuff = attributeDebuffs.Find(d => d.attribute == "暴击");
         if (debuff != null)
             raw -= debuff.reducePercent;
-        return Mathf.Min(raw, 1f);
+        return raw; // 不限制100%，允许显示溢出
     }
 
     public float GetOverCritRate()
@@ -381,11 +399,20 @@ public class Character : MonoBehaviour
     public float GetFinalCritDamage()
     {
         float baseCritDmg = cachedCritDamage + (mingXinActive ? mingXinCritDamageBonus : 0f);
-        if (faction == "FangCunShan")
+
+        // 溢出暴击率转暴伤系数（根据门派被动）
+        float overCrit = GetOverCritRate();
+        if (faction == "TianWangDian" || faction == "WuZhuangGuan")
         {
-            float overCrit = GetOverCritRate();
+            // 游刃有余/成竹在胸：1:1转化
+            baseCritDmg += overCrit * 1f;
+        }
+        else if (faction == "FangCunShan")
+        {
+            // 得心应手：1:2转化
             baseCritDmg += overCrit * 2f;
         }
+
         return baseCritDmg;
     }
 
@@ -398,7 +425,9 @@ public class Character : MonoBehaviour
 
     public float GetTotalComboChance()
     {
-        float baseVal = totalComboChance + tempComboBonus + (lionComboBuffActive ? lionComboBuffValue : 0f);
+        float baseVal = totalComboChance + tempComboBonus
+            + (lionComboBuffActive ? lionComboBuffValue : 0f)
+            + (weiZhenBuffActive ? lionComboBuffValue : 0f);
         var debuff = attributeDebuffs.Find(d => d.attribute == "连击");
         if (debuff != null)
             baseVal -= debuff.reducePercent;
@@ -480,6 +509,8 @@ public class Character : MonoBehaviour
         nextCritRateBonusRemaining = 0;
         lionComboBuffActive = false;
         lionComboBuffRemaining = 0;
+        weiZhenBuffActive = false;
+        weiZhenBuffConsumed = false;
         shengShengAttackBonusActive = false;
         shengShengAttackBonusRemaining = 0;
         xiuLiStunBuffActive = false;
@@ -507,6 +538,7 @@ public class Character : MonoBehaviour
         attributeDebuffs.Clear();
         xunJieActive = false;
         xunJieRemaining = 0;
+        xunJieSpeedBonus = 0.20f;
 
         huiDengHitBonus = 0f;
         huiDengHitBonusRemaining = 0;
@@ -566,6 +598,9 @@ public class Character : MonoBehaviour
 
         // 阵亡惩罚速度加成（不重置，持续到战斗结束）
         // deathPenaltySpeedBonus = 0f;
+
+        // 下次攻击加成消耗标记（不重置，战斗开始时重置一次即可）
+        nextAttackBonusConsumed = false;
     }
 
     public void Initialize()
@@ -586,6 +621,16 @@ public class Character : MonoBehaviour
         arrayFormationRemaining = 0;
         buffs.Clear();
         InitFactionAndSkills();
+
+        // ★ 门派免伤被动实装（迅疾如风/混元道体/破妄之眼各提供30%免伤）
+        if (!string.IsNullOrEmpty(faction) && !isCustomStats)
+        {
+            if (faction == "TianWangDian" || faction == "WuZhuangGuan" || faction == "FangCunShan")
+            {
+                damageReductionPercent = 0.3f;
+            }
+        }
+
         if (animator == null) animator = GetComponent<Animator>();
 
         if (damageText != null)
@@ -658,7 +703,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 101,
-                description = "对目标连续攻击2次，每次造成80%攻击力的伤害；若两次攻击均命中，则自身下回合连击概率提升10%（不可叠加）。"
+                description = "对目标连续攻击2次，每次造成100%攻击力的伤害；若两次攻击均命中，则下次攻击时连击概率提升10%（不可叠加，施加攻击后消耗）。"
             });
             skills.Add(new Skill
             {
@@ -669,7 +714,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 102,
-                description = "有80%概率使目标陷入“错乱”状态，无法施展任何技能，持续3回合；若效果命中，则自身下回合连击概率提升10%；此次攻击回复自身30%内力值。"
+                description = "有80%概率使目标陷入“错乱”状态，无法施展任何技能，持续3回合；若效果命中，则自身下次攻击时连击概率提升10%；此次攻击回复自身30%内力值。"
             });
             skills.Add(new Skill
             {
@@ -691,7 +736,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 104,
-                description = "回复自身30%气血，并进入“列阵”状态：所受伤害降低40%，并对己方全体角色提升相当于自身10%的防御；当任意己方角色被敌方攻击时，自身有80%概率触发一次反击（造成相当于自身60%攻击力的固定伤害，不消耗行动值）；持续4回合。"
+                description = "回复自身30%气血，并进入“列阵”状态：免伤提升20%，并对己方全体角色提升相当于自身10%的防御；在任意己方角色被敌方攻击时，自身有80%概率触发一次反击（造成相当于自身75%攻击力的固定伤害，不消耗行动值）；持续4回合。"
             });
         }
         else if (faction == "WuZhuangGuan")
@@ -705,7 +750,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 201,
-                description = "对目标造成150%攻击力的伤害；若目标已处于眩晕状态，则伤害提升30%并延长眩晕1回合。"
+                description = "对目标造成180%攻击力的伤害；若目标已处于眩晕状态，则伤害提升30%（技能伤害系数提升至210%）并延长眩晕1回合。"
             });
             skills.Add(new Skill
             {
@@ -716,7 +761,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 202,
-                description = "有80%概率使目标陷入“眩晕”状态，无法行动，持续3回合；若效果命中，则自身下回合晕击概率提升10%；此次攻击回复自身30%内力值。"
+                description = "有80%概率使目标陷入“眩晕”状态，无法行动，持续3回合；若效果命中，则自身下次攻击时晕击概率提升10%；此次攻击回复自身30%内力值。"
             });
             skills.Add(new Skill
             {
@@ -738,7 +783,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 204,
-                description = "对敌方全体造成150%攻击力的伤害，并有80%概率使其行动条减少30%。同时进入“镇岳”状态：晕击概率提高10%，且每次成功触发晕击时，自身行动条增加30%；持续4回合。"
+                description = "对敌方全体造成180%攻击力的伤害，并有80%概率使其行动条减少30%。同时进入“镇岳”状态：晕击概率提高10%，且每次成功触发晕击时自身行动提前30%；持续4回合。"
             });
         }
         else if (faction == "FangCunShan")
@@ -752,7 +797,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 301,
-                description = "对敌方单体造成150%攻击力的伤害；若暴击率大于等于75%，则此次攻击必暴击，且对其他所有敌人造成40%的溅射伤害。"
+                description = "对敌方单体造成150%攻击力的伤害；若暴击率大于等于75%，则此次攻击必暴击，且对其他所有敌人造成60%的溅射伤害。"
             });
             skills.Add(new Skill
             {
@@ -763,7 +808,7 @@ public class Character : MonoBehaviour
                 currentCooldown = 0,
                 isFreeAction = false,
                 skillID = 302,
-                description = "有80%概率使目标陷入“睡眠”状态，无法行动，持续3回合（受到伤害会醒来）；若效果命中，则自身下回合暴击概率提高10%；此次攻击回复自身30%内力值。"
+                description = "有80%概率使目标陷入“睡眠”状态，无法行动，持续3回合（受到伤害会醒来）；若效果命中，则自身下次攻击时暴击概率提升10%；此次攻击回复自身30%内力值。"
             });
             skills.Add(new Skill
             {
@@ -1137,9 +1182,10 @@ public class Character : MonoBehaviour
             arrayFormationRemaining--;
             if (arrayFormationRemaining <= 0) { isInArrayFormation = false; arrayFormationReduction = 0f; arrayFormationCounterChance = 0f; }
         }
-        if (lionComboBuffActive) { lionComboBuffRemaining--; if (lionComboBuffRemaining <= 0) lionComboBuffActive = false; }
+        // ★ 狮子搏兔/威震山河buff（不依赖倒计时，由攻击消耗）
         if (shengShengAttackBonusActive) { shengShengAttackBonusRemaining--; if (shengShengAttackBonusRemaining <= 0) shengShengAttackBonusActive = false; }
-        if (xiuLiStunBuffActive) { xiuLiStunBuffRemaining--; if (xiuLiStunBuffRemaining <= 0) xiuLiStunBuffActive = false; }
+        // ★ 袖里乾坤/禅心入梦buff（不依赖倒计时，由攻击消耗）
+        // xiuLiStunBuffActive 和 chanXinCritBonus 在 ConsumeNextAttackBonus 中消耗
         if (damageTakenIncreaseRemaining > 0) { damageTakenIncreaseRemaining--; if (damageTakenIncreaseRemaining <= 0) damageTakenIncrease = 0f; }
         if (hitRateDecreaseRemaining > 0) { hitRateDecreaseRemaining--; if (hitRateDecreaseRemaining <= 0) hitRateDecrease = 0f; }
         if (baGuaZhenYueActive) { baGuaZhenYueRemaining--; if (baGuaZhenYueRemaining <= 0) { baGuaZhenYueActive = false; controlChanceBonus = 0f; } }
@@ -1250,6 +1296,8 @@ public class Character : MonoBehaviour
         lianFengDamageBonus = 0f;
         lianFengArmorPen = 0f;
         lianFengComboPenalty = 0f;
+
+        // ★ 每回合重置妙法承佑"下次攻击"标记（层数由 ConsumeNextAttackBonus 消耗，不在此重置）
     }
 
     public void ApplySpeedBuff(float multiplier, float duration)
@@ -1465,11 +1513,8 @@ public class Character : MonoBehaviour
 
     public void OnTurnStart()
     {
-        if (chanXinCritBonus > 0)
-        {
-            tempCritRateBonus += chanXinCritBonus;
-            chanXinCritBonus = 0f;
-        }
+        // ★ 禅心入梦的暴击加成不再在回合开始时转移到tempCritRateBonus
+        // 改为在 GetFinalCritRate() 中直接判断 chanXinCritBonus > 0
 
         // ★ 在回合开始时处理灼伤/中毒
         BattleManager bm = FindObjectOfType<BattleManager>();
@@ -1647,9 +1692,46 @@ public class Character : MonoBehaviour
             {
                 ally.xunJieActive = true;
                 ally.xunJieRemaining = 2;
+                ally.xunJieSpeedBonus = 0.20f; // 迅捷加速20%
             }
         }
-        battleManager.AddTurnResultMessage($"己方全体获得迅捷状态，速度+15%，持续2回合");
+        battleManager.AddTurnResultMessage($"己方全体获得迅捷状态，速度+20%，持续2回合");
+    }
+
+    /// <summary>
+    /// 消耗"下次攻击加成"buff（威震山河/袖里乾坤/禅心入梦/狮子搏兔）
+    /// 调用时机：角色成功造成伤害后
+    /// </summary>
+    public void ConsumeNextAttackBonus()
+    {
+        if (nextAttackBonusConsumed) return;
+        nextAttackBonusConsumed = true;
+
+        // 消耗狮子搏兔的连击加成
+        lionComboBuffActive = false;
+        lionComboBuffRemaining = 0;
+
+        // 消耗威震山河的连击加成
+        weiZhenBuffActive = false;
+        weiZhenBuffConsumed = true;
+
+        // 消耗袖里乾坤的晕击加成
+        xiuLiStunBuffActive = false;
+        xiuLiStunBuffRemaining = 0;
+
+        // 消耗禅心入梦的暴击加成
+        chanXinCritBonus = 0f;
+    }
+
+    /// <summary>
+    /// 消耗妙法承佑一层伤害加成（与下次攻击加成消耗解耦，每次攻击命中都独立检查）
+    /// </summary>
+    public void ConsumeMiaoFaBonus()
+    {
+        if (faction == "FangCunShan" && nextAttackDamageBonusStacks > 0)
+        {
+            nextAttackDamageBonusStacks--;
+        }
     }
 
     public void OnCrit(Character target, BattleManager battleManager, int skillID)
@@ -1662,6 +1744,10 @@ public class Character : MonoBehaviour
             huiDengHitBonus = 0.15f;
             huiDengHitBonusRemaining = 2;
             battleManager.AddTurnResultMessage($"命中率提高15%，持续2回合");
+
+            // ★ 妙法承佑：暴击后使自身下一次攻击伤害提高20%（可叠加，上限60%）
+            nextAttackDamageBonusStacks = Mathf.Min(nextAttackDamageBonusStacks + 1, 3);
+            battleManager.AddTurnResultMessage($"妙法承佑：攻击伤害提高{nextAttackDamageBonusStacks * 20}%（{nextAttackDamageBonusStacks}层，上限60%）");
         }
         if (mingXinActive)
         {
@@ -1776,11 +1862,19 @@ public class Character : MonoBehaviour
         }
         string formationReflectStr = formationReflectDamage > 0 ? $"{formationReflectDamage}" : "0";
 
+        // ★ 计算当前总免伤
+        float totalDamageReduction = damageReductionPercent;
+        if (isInArrayFormation)
+            totalDamageReduction += arrayFormationReduction;
+        else if (isDefending)
+            totalDamageReduction += defenseReduction;
+        string totalDamageReductionStr = $"{totalDamageReduction * 100:F0}%";
+
         sb.AppendFormat("{0,-" + colWidth4 + "}{1,-" + colWidth4 + "}{2,-" + colWidth4 + "}{3,-" + colWidth4 + "}\n",
-            $"反击: {counterStr}",
-            $"反伤: {reflectDesc}",
-            $"列阵反伤: {formationReflectStr}",
-            "");
+        $"反击: {counterStr}",
+        $"反伤: {reflectDesc}",
+        $"列阵: {formationReflectStr}",
+        $"免伤: {totalDamageReductionStr}");
 
         sb.AppendLine("状态效果:");
         List<string> effectDescriptions = new List<string>();
@@ -1794,9 +1888,10 @@ public class Character : MonoBehaviour
         if (isInArrayFormation) effectDescriptions.Add($"列阵（不动如山）：所受伤害降低{arrayFormationReduction * 100:F0}%，被攻击时{arrayFormationCounterChance * 100:F0}%概率反击（造成{reflectMult * 100:F0}%攻击力的固定伤害）；剩余{arrayFormationRemaining}回合");
         if (baGuaZhenYueActive) effectDescriptions.Add($"镇岳（五雷轰顶）：晕击概率提高{controlChanceBonus * 100:F0}%，成功晕击时拉条30%。剩余{baGuaZhenYueRemaining}回合");
         if (mingXinActive) effectDescriptions.Add($"明心（明心见性）：暴击率提高{mingXinCritRateBonus * 100:F0}%，暴击伤害提高{mingXinCritDamageBonus * 100:F0}%，暴击拉条20%；剩余{mingXinRemaining}回合");
-        if (lionComboBuffActive) effectDescriptions.Add($"狮子搏兔：下回合连击率提高{lionComboBuffValue * 100:F0}%。剩余{lionComboBuffRemaining}回合");
+        if (lionComboBuffActive) effectDescriptions.Add($"狮子搏兔：下次攻击连击率提高{lionComboBuffValue * 100:F0}%。");
+        if (weiZhenBuffActive) effectDescriptions.Add($"威震山河：下次攻击连击率提高{lionComboBuffValue * 100:F0}%。");
         if (shengShengAttackBonusActive) effectDescriptions.Add($"生生不息：攻击力提高{shengShengAttackBonusValue * 100:F0}%。剩余{shengShengAttackBonusRemaining}回合");
-        if (xiuLiStunBuffActive) effectDescriptions.Add($"袖里乾坤：下回合晕击率提高{xiuLiStunBuffValue * 100:F0}%。剩余{xiuLiStunBuffRemaining}回合");
+        if (xiuLiStunBuffActive) effectDescriptions.Add($"袖里乾坤：下次攻击晕击率提高{xiuLiStunBuffValue * 100:F0}%。");
         if (damageTakenIncreaseRemaining > 0) effectDescriptions.Add($"天地同寿：受到的伤害提高{damageTakenIncrease * 100:F0}%。剩余{damageTakenIncreaseRemaining}回合");
         if (hitRateDecreaseRemaining > 0) effectDescriptions.Add($"破妄之眼：命中率降低{hitRateDecrease * 100:F0}%。剩余{hitRateDecreaseRemaining}回合");
         if (tempComboBonus > 0) effectDescriptions.Add($"枕戈待旦：连击率+{tempComboBonus * 100:F0}%（仅本回合）");
@@ -1808,11 +1903,11 @@ public class Character : MonoBehaviour
         if (tempEvaBonus > 0) effectDescriptions.Add($"临时闪避增益：闪避率+{tempEvaBonus * 100:F0}%（仅本回合）");
         if (nextCritRateBonus > 0) effectDescriptions.Add($"慧灯永续：下次攻击暴击率+{nextCritRateBonus * 100:F0}%");
         if (huiDengHitBonus > 0) effectDescriptions.Add($"慧灯永续：命中率+{huiDengHitBonus * 100:F0}%");
-        if (chanXinCritBonus > 0) effectDescriptions.Add($"禅心入梦：下回合暴击率+10%");
+        if (chanXinCritBonus > 0) effectDescriptions.Add($"禅心入梦：下次攻击暴击率+10%");
         if (xianXianCritBonus > 0) effectDescriptions.Add($"陷仙结界：暴击率+{xianXianCritBonus * 100:F0}%");
 
         if (lianFengStacks > 0) effectDescriptions.Add($"敛锋：伤害+{lianFengDamageBonus * 100:F0}%，防御忽视+{lianFengArmorPen * 100:F0}%，连击率-{lianFengComboPenalty * 100:F0}% (本回合)");
-        if (xunJieActive) effectDescriptions.Add($"迅捷：速度+15%。剩余{xunJieRemaining}回合");
+        if (xunJieActive) effectDescriptions.Add($"迅捷：速度+{xunJieSpeedBonus * 100:F0}%。剩余{xunJieRemaining}回合");
         foreach (var debuff in attributeDebuffs)
         {
             effectDescriptions.Add($"{debuff.attribute}降低{debuff.reducePercent * 100:F0}%。剩余{debuff.remainingTurns}回合");
@@ -1836,9 +1931,7 @@ public class Character : MonoBehaviour
             effectDescriptions.Add($"戮仙结界：全体友方攻击附带中毒效果（2回合）");
         }
 
-        // ★ 新增通用被动显示（免伤、反伤、免疫控制）
-        if (damageReductionPercent > 0)
-            effectDescriptions.Add($"免伤 {damageReductionPercent * 100:F0}%");
+        // ★ 通用被动显示（反伤、免疫控制）
         if (reflectDamagePercent > 0)
             effectDescriptions.Add($"反伤 {reflectDamagePercent * 100:F0}%");
         if (immuneToControl)
@@ -1888,21 +1981,36 @@ public class Character : MonoBehaviour
         switch (faction)
         {
             case "TianWangDian":
-                sb.AppendLine($"  - 生生不息：连击时回复15%生命，攻击力+15%（当前剩余 {shengShengAttackBonusRemaining} 回合）");
-                sb.AppendLine($"  - 迅疾如风：反击伤害+30%");
-                sb.AppendLine($"  - 蓄势待发：连击可多次触发，每次触发连击时获得“敛锋”状态（提升自身10%伤害/5%防御忽视，并降低自身10%连击概率），可叠加，持续到本回合结束。当前敛锋层数：{lianFengStacks}");
+                string youRenYouYuDesc = "";
+                float overCritTW = GetOverCritRate();
+                if (overCritTW > 0)
+                    youRenYouYuDesc = $"（溢出 {overCritTW * 100:F0}% 暴击率，已转换为 {overCritTW * 100:F0}% 暴伤系数）";
+                sb.AppendLine($"  - 游刃有余：将溢出的暴击率按 1:1 比例转化为暴伤系数。{youRenYouYuDesc}");
+                sb.AppendLine($"  - 迅疾如风：免伤提升30%；反击后使自身行动提前10%。");
+                sb.AppendLine($"  - 生生不息：每次触发连击时，恢复自身15%最大生命值，并提升15%攻击力，持续2回合（不可叠加）。当前剩余 {shengShengAttackBonusRemaining} 回合。");
+                sb.AppendLine($"  - 蓄势待发：连击可多次触发，每次触发连击时获得“敛锋”状态（提升自身10%伤害与5%防御忽视，并降低自身10%连击概率），可叠加（上限10层），持续到本回合结束；若回合结束时连击率大于等于50%且本回合内未触发连击，则额外发动一次不可多次触发的连击。当前敛锋层数：{lianFengStacks}。");
                 break;
             case "WuZhuangGuan":
-                sb.AppendLine($"  - 混元道体：受击15%反晕（本回合已触发：{(hunYuanDaoTiTriggeredThisTurn ? "是" : "否")}）");
+                string chengZhuZaiXiongDesc = "";
+                float overCritWZ = GetOverCritRate();
+                if (overCritWZ > 0)
+                    chengZhuZaiXiongDesc = $"（溢出 {overCritWZ * 100:F0}% 暴击率，已转换为 {overCritWZ * 100:F0}% 暴伤系数）";
+                sb.AppendLine($"  - 成竹在胸：将溢出的暴击率按 1:1 比例转化为暴伤系数。{chengZhuZaiXiongDesc}");
+                sb.AppendLine($"  - 混元道体：免伤提升30%；受到攻击时，有15%概率使攻击者眩晕1回合（本回合已触发：{(hunYuanDaoTiTriggeredThisTurn ? "是" : "否")}）。");
                 string tianDiTongShouStatus = damageTakenIncreaseRemaining > 0 ? $"目标易伤 {damageTakenIncrease * 100:F0}% 剩余 {damageTakenIncreaseRemaining} 回合" : "未激活";
-                sb.AppendLine($"  - 天地同寿：眩晕成功时回复15%生命，使目标易伤10%（{tianDiTongShouStatus}）");
-                sb.AppendLine($"  - 道玄缚祟：每次攻击前随机施加一个负面效果（除生命外的战斗属性降低10%），持续2回合，并对己方全体施加“迅捷”状态（提升15%速度，持续2回合，不可叠加）；攻击时，敌方每存在一个负面效果，提升15%伤害，最多75%。");
+                sb.AppendLine($"  - 天地同寿：每次成功眩晕目标时，恢复自身15%最大生命值，并施加“易伤”效果（受到的伤害提高10%），持续2回合（不可叠加）。{tianDiTongShouStatus}");
+                sb.AppendLine($"  - 道玄缚祟：攻击目标前，从未施加的负面效果中随机选择一个进行施加（除生命外的战斗属性降低10%，不可叠加），持续2回合，并对己方全体角色施加“迅捷”状态（提升20%速度，持续2回合，不可叠加）；敌方每存在一个负面效果（战斗属性降低系列），提升15%伤害，最多可提升75%。");
                 break;
             case "FangCunShan":
+                string deXinYingShouDesc = "";
+                float overCritFC = GetOverCritRate();
+                if (overCritFC > 0)
+                    deXinYingShouDesc = $"（溢出 {overCritFC * 100:F0}% 暴击率，已转换为 {overCritFC * 2 * 100:F0}% 暴伤系数）";
+                sb.AppendLine($"  - 得心应手：将溢出的暴击率按 1:2 比例转化为暴伤系数。{deXinYingShouDesc}");
                 string poWangStatus = hitRateDecreaseRemaining > 0 ? $"目标命中-{hitRateDecrease * 100:F0}% 剩余 {hitRateDecreaseRemaining} 回合" : "未激活";
-                sb.AppendLine($"  - 破妄之眼：受击80%使目标命中-10%（{poWangStatus}）");
-                sb.AppendLine($"  - 慧灯永续：暴击时回复15%生命，命中率+15%（当前命中加成{huiDengHitBonus * 100:F0}%）");
-                sb.AppendLine($"  - 妙法承佑：将溢出的暴击率按200%比例转化为暴伤系数；暴击时忽视敌方10%防御，并为己方全体成员施加相当于此次伤害20%的护盾。");
+                sb.AppendLine($"  - 破妄之眼：免伤提升30%；受到攻击时，有80%概率使目标命中率降低10%，持续2回合（不可叠加）。{poWangStatus}");
+                sb.AppendLine($"  - 慧灯永续：每次触发暴击时，自身回复15%最大生命值，并提升15%命中率，持续2回合（不可叠加）。当前命中加成{huiDengHitBonus * 100:F0}%。");
+                sb.AppendLine($"  - 妙法承佑：暴击时忽视敌方20%防御，并为己方全体角色施加相当于此次伤害30%的护盾（含无相慧剑溅射伤害）；暴击后使自身下一次攻击伤害提高20%（可叠加，上限60%，触发后消耗一层）。当前层数：{nextAttackDamageBonusStacks}。");
                 break;
             default:
                 // 根据角色名字显示被动

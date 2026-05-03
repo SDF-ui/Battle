@@ -1055,9 +1055,8 @@ public class BattleManager : MonoBehaviour
                 {
                     target.ApplyConfuse(3);
                     AddTurnResultMessage($"{target.characterName} 陷入错乱");
-                    caster.lionComboBuffActive = true;
-                    caster.lionComboBuffRemaining = 2;
-                    AddTurnResultMessage($"{caster.characterName} 威震山河成功，下回合连击率+10%");
+                    caster.weiZhenBuffActive = true;
+                    AddTurnResultMessage($"{caster.characterName} 威震山河成功，下次攻击时连击率+10%");
                 }
                 caster.currentMP = Mathf.Min(caster.currentMP + Mathf.RoundToInt(caster.MaxMP * 0.3f), caster.MaxMP);
                 AddTurnResultMessage($"{caster.characterName} 回复30%内力");
@@ -1068,7 +1067,7 @@ public class BattleManager : MonoBehaviour
                 break;
             case 104:
                 caster.isInArrayFormation = true;
-                caster.arrayFormationReduction = 0.4f;
+                caster.arrayFormationReduction = 0.2f;
                 caster.arrayFormationCounterChance = 0.8f;
                 caster.arrayFormationRemaining = 4;
 
@@ -1086,13 +1085,13 @@ public class BattleManager : MonoBehaviour
                     }
                 }
                 AddTurnResultMessage($"{caster.characterName} 为全体队友增加 {defBonus} 点防御，持续4回合");
-                AddTurnResultMessage($"{caster.characterName} 进入列阵状态 (4回合, 40%减伤, 80%反击, 团队防御+{defBonus})");
+                AddTurnResultMessage($"{caster.characterName} 进入列阵状态 (4回合, 免伤+20%, 75%反击, 团队防御+{defBonus})");
                 break;
             case 201:
-                float dmgMult = 1.5f;
+                float dmgMult = 1.8f;
                 if (target.isStunned)
                 {
-                    dmgMult = 1.8f;
+                    dmgMult = 2.1f;
                     target.stunRemaining++;
                     AddTurnResultMessage($"{target.characterName} 眩晕被延长1回合");
                 }
@@ -1109,7 +1108,7 @@ public class BattleManager : MonoBehaviour
                     AddTurnResultMessage($"{target.characterName} 被眩晕3回合");
                     caster.xiuLiStunBuffActive = true;
                     caster.xiuLiStunBuffRemaining = 2;
-                    AddTurnResultMessage($"{caster.characterName} 袖里乾坤成功，下回合晕击率+10%");
+                    AddTurnResultMessage($"{caster.characterName} 袖里乾坤成功，下次攻击时晕击率+10%");
                     caster.OnStunSuccess(target, this);
                 }
                 caster.currentMP = Mathf.Min(caster.currentMP + Mathf.RoundToInt(caster.MaxMP * 0.3f), caster.MaxMP);
@@ -1122,7 +1121,7 @@ public class BattleManager : MonoBehaviour
             case 204:
                 foreach (var enemy in enemyParty.Where(e => !e.IsDead()))
                 {
-                    yield return StartCoroutine(ApplyAttackToTarget(caster, enemy, 1.5f, true, skill.skillID));
+                    yield return StartCoroutine(ApplyAttackToTarget(caster, enemy, 1.2f, true, skill.skillID));
                 }
                 float pushChance = 0.8f;
                 foreach (var enemy in enemyParty.Where(e => !e.IsDead()))
@@ -1153,7 +1152,7 @@ public class BattleManager : MonoBehaviour
                     target.ApplySleep(3);
                     AddTurnResultMessage($"{target.characterName} 陷入睡眠");
                     caster.chanXinCritBonus = 0.1f;
-                    AddTurnResultMessage($"{caster.characterName} 禅心入梦成功，下回合暴击率+10%");
+                    AddTurnResultMessage($"{caster.characterName} 禅心入梦成功，下次攻击时暴击率+10%");
                 }
                 caster.currentMP = Mathf.Min(caster.currentMP + Mathf.RoundToInt(caster.MaxMP * 0.3f), caster.MaxMP);
                 AddTurnResultMessage($"{caster.characterName} 回复30%内力");
@@ -1353,6 +1352,9 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator PerformWisdomSword(Character caster, Character target)
     {
+        // 重置暴击总伤害缓存
+        caster.currentCritTotalDamage = 0;
+
         float finalCritRate = caster.GetFinalCritRate();
         bool guaranteedCrit = finalCritRate >= 0.75f;
         float damageMult = 1.5f;
@@ -1364,7 +1366,8 @@ public class BattleManager : MonoBehaviour
             int mainDamage = caster.lastMainDamageDealt;
             if (mainDamage > 0)
             {
-                int splashDamage = Mathf.RoundToInt(mainDamage * 0.4f);
+                int splashDamage = Mathf.RoundToInt(mainDamage * 0.6f);
+                int totalSplashDamage = 0;
                 foreach (var enemy in enemyParty)
                 {
                     if (enemy != target && !enemy.IsDead())
@@ -1376,7 +1379,25 @@ public class BattleManager : MonoBehaviour
                         AddDamageToCurrentTurn(finalSplash);
                         PlayIconHitAnimation(enemy);
                         AddTurnResultMessage($"无相慧剑溅射对 {enemy.characterName} 造成 {finalSplash} 伤害");
+                        totalSplashDamage += finalSplash;
                     }
+                }
+
+                // ★ 若溅射触发暴击伤害累计，将溅射伤害也计入妙法承佑护盾
+                if (caster.faction == "FangCunShan" && totalSplashDamage > 0)
+                {
+                    // 将溅射伤害累计到暴击总伤害，并补发护盾
+                    caster.currentCritTotalDamage += totalSplashDamage;
+                    int splashShield = Mathf.RoundToInt(totalSplashDamage * 0.3f);
+                    foreach (var ally in playerParty)
+                    {
+                        if (ally != null && !ally.IsDead())
+                        {
+                            int newShield = Mathf.Min(ally.overHealShield + splashShield, ally.MaxHP);
+                            ally.overHealShield = newShield;
+                        }
+                    }
+                    AddTurnResultMessage($"妙法承佑溅射护盾 +{splashShield}");
                 }
             }
         }
@@ -1568,6 +1589,7 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator ApplyAttackToTarget(Character attacker, Character defender, float damageMult, bool isMagic, int skillID, float extraCritRate = 0f, float extraCritDamage = 0f, bool forceCrit = false)
     {
+        bool isPlayer = playerParty.Contains(attacker);
         if (attacker.faction == "WuZhuangGuan" && !attacker.IsDead())
         {
             attacker.ApplyDaoXuanFuSuiEffects(defender, this);
@@ -1621,6 +1643,13 @@ public class BattleManager : MonoBehaviour
 
         float finalCritRate = attacker.GetFinalCritRate() + extraCritRate;
         float finalCritDamage = attacker.GetFinalCritDamage() + extraCritDamage;
+
+        // ★ 暴击前消耗妙法承佑层数（让本次攻击带着旧层数加成打完伤害，然后消耗掉）
+        if (attacker.faction == "FangCunShan")
+        {
+            attacker.ConsumeMiaoFaBonus();
+        }
+
         bool isCrit = forceCrit || (Random.value < finalCritRate);
 
         if (isCrit)
@@ -1659,6 +1688,10 @@ public class BattleManager : MonoBehaviour
 
         // ★ 玄武镇岳阵分摊：四神兽受到伤害时，50%由玄武承担（玄武自身不受分摊）
         bool isPlayerAttacking = playerParty.Contains(attacker);
+
+        // ★ 妙法承佑护盾需要基于分摊前的总伤害，所以在分摊前缓存
+        int preSharingDamage = finalDamage;
+
         if (isPlayerAttacking && FourSymbolAura.HasTurtleAura(this) &&
             defender.characterName != "玄武" &&
             (defender.characterName == "青龙" || defender.characterName == "白虎" || defender.characterName == "朱雀"))
@@ -1687,6 +1720,17 @@ public class BattleManager : MonoBehaviour
         defender.TakeDamage(finalDamage, isCrit);
         AddDamageToCurrentTurn(finalDamage);
         attacker.lastDamageDealt = finalDamage;
+
+        // ★ 攻击命中后消耗"下次攻击加成"buff（威震山河/袖里乾坤/禅心入梦/狮子搏兔）
+        if (isPlayer && attacker.lastAttackHit)
+        {
+            attacker.ConsumeNextAttackBonus();
+        }
+        if (attacker == currentActor && !isPlayer && attacker.lastAttackHit)
+        {
+            attacker.ConsumeNextAttackBonus();
+        }
+
         PlayIconHitAnimation(defender);
         AddTurnResultMessage($"{attacker.characterName} 造成 {finalDamage} 伤害");
 
@@ -1700,7 +1744,8 @@ public class BattleManager : MonoBehaviour
 
         if (isCrit && attacker.faction == "FangCunShan")
         {
-            int shieldAmount = Mathf.RoundToInt(finalDamage * 0.2f);
+            int shieldAmount = Mathf.RoundToInt(preSharingDamage * 0.3f);
+            attacker.currentCritTotalDamage += preSharingDamage;
             foreach (var ally in playerParty)
             {
                 if (ally != null && !ally.IsDead())
@@ -1843,7 +1888,6 @@ public class BattleManager : MonoBehaviour
             AddTurnResultMessage($"{defender.characterName} 从睡眠中醒来");
         }
 
-        bool isPlayer = playerParty.Contains(attacker);
         // 目前仅限敌人有结界
         if (!isPlayer)
         {
@@ -1982,8 +2026,7 @@ public class BattleManager : MonoBehaviour
             counter.ApplyDaoXuanFuSuiEffects(target, this);
         }
 
-        float counterDamageMult = 0.6f;
-        if (counter.faction == "TianWangDian") counterDamageMult = 0.9f;
+        float counterDamageMult = 0.75f;
 
         int counterDamage = Mathf.RoundToInt(counter.GetFinalATK() * counterDamageMult);
         // 固定伤害，不再额外计算防御减免（但目标减伤效果仍会生效）
@@ -2014,6 +2057,14 @@ public class BattleManager : MonoBehaviour
         target.TakeDamage(counterDamage, false);
         PlayIconHitAnimation(target);
         AddTurnResultMessage($"{counter.characterName} 反击造成 {counterDamage} 伤害");
+
+        // ★ 迅疾如风：反击后使自身行动提前10%（天王殿专属）
+        if (counter.faction == "TianWangDian")
+        {
+            float pushAmount = ACTION_THRESHOLD * 0.1f;
+            counter.currentActionValue += pushAmount;
+            AddTurnResultMessage($"{counter.characterName} 迅疾如风触发，反击后行动提前10%");
+        }
 
         // ★ 反击击杀灵风佩叠层 ★
         if (target.IsDead())
@@ -2048,7 +2099,7 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator TwoStrikeAttack(Character attacker, Character defender)
     {
-        yield return StartCoroutine(PerformAttack(attacker, defender, 0.8f, false));
+        yield return StartCoroutine(PerformAttack(attacker, defender, 1.0f, false));
         bool firstHit = attacker.lastAttackHit;
 
         yield return new WaitForSeconds(0.1f);
@@ -2063,14 +2114,13 @@ public class BattleManager : MonoBehaviour
                 yield break;
         }
 
-        yield return StartCoroutine(PerformAttack(attacker, secondTarget, 0.8f, false));
+        yield return StartCoroutine(PerformAttack(attacker, secondTarget, 1.0f, false));
         bool secondHit = attacker.lastAttackHit;
 
         if (firstHit && secondHit)
         {
             attacker.lionComboBuffActive = true;
-            attacker.lionComboBuffRemaining = 2;
-            AddTurnResultMessage($"{attacker.characterName} 狮子搏兔两次命中，下回合连击率+10%！");
+            AddTurnResultMessage($"{attacker.characterName} 狮子搏兔两次命中，下次攻击时连击率+10%！");
         }
     }
 
