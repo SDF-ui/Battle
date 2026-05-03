@@ -30,10 +30,10 @@ public class FantasyStatusPanel : MonoBehaviour
     private int level => GameData.playerLevel;
     private string faction => GameData.playerFaction;
 
-    // 门派基础概率（根据 faction 设置）
-    private float baseComboChance => faction == "TianWangDian" ? 0.20f : 0f;
-    private float baseStunChance => faction == "WuZhuangGuan" ? 0.20f : 0f;
-    private float baseCritRate => faction == "FangCunShan" ? 0.10f : 0f;
+    // 门派基础概率（使用 FactionSkillDatabase）
+    private float baseComboChance => FactionSkillDatabase.GetBaseComboChance(faction);
+    private float baseStunChance => FactionSkillDatabase.GetBaseStunChance(faction);
+    private float baseCritRate => FactionSkillDatabase.GetBaseCritRate(faction);
 
     // 与 BattleManager 中保持一致
     private const float ACTION_THRESHOLD = 500f;
@@ -102,55 +102,6 @@ public class FantasyStatusPanel : MonoBehaviour
         comboText.text = (stats.ComboRate * 100).ToString("F1") + "%";
         stunText.text = (stats.StunRate * 100).ToString("F1") + "%";
         fleeText.text = ((0.3f + stats.SPD / ACTION_THRESHOLD) * 100).ToString("F1") + "%";
-    }
-    // 处理装备属性（包含基础属性和战斗属性）
-    private void AddAttribute(ref int hp, ref int mp, ref int atk, ref int def, ref int spd,
-                               ref int crit, ref int hit, ref int eva, ref int combo, ref int stun,
-                               ref int con, ref int intel, ref int str, ref int agi,
-                               ItemAttribute attr)
-    {
-        switch (attr.type)
-        {
-            case AttributeType.Constitution: con += attr.value; break;
-            case AttributeType.Spirit: intel += attr.value; break;
-            case AttributeType.Strength: str += attr.value; break;
-            case AttributeType.Agility: agi += attr.value; break;
-            case AttributeType.Health: hp += attr.value; break;
-            case AttributeType.Mana: mp += attr.value; break;
-            case AttributeType.Attack: atk += attr.value; break;
-            case AttributeType.Defense: def += attr.value; break;
-            case AttributeType.Speed: spd += attr.value; break;
-            case AttributeType.CritRate: crit += attr.value; break;
-            case AttributeType.HitRate: hit += attr.value; break;
-            case AttributeType.EvasionRate: eva += attr.value; break;
-            case AttributeType.ComboRate: combo += attr.value; break;
-            case AttributeType.StunRate: stun += attr.value; break;
-        }
-    }
-
-    // 处理法宝属性（包含基础属性和战斗属性）
-    private void AddArtifactAttribute(ItemAttribute attr,
-                                       ref int con, ref int intel, ref int str, ref int agi,
-                                       ref int hp, ref int mp, ref int atk, ref int def, ref int spd,
-                                       ref int crit, ref int hit, ref int eva, ref int combo, ref int stun)
-    {
-        switch (attr.type)
-        {
-            case AttributeType.Constitution: con += attr.value; break;
-            case AttributeType.Spirit: intel += attr.value; break;
-            case AttributeType.Strength: str += attr.value; break;
-            case AttributeType.Agility: agi += attr.value; break;
-            case AttributeType.Health: hp += attr.value; break;
-            case AttributeType.Mana: mp += attr.value; break;
-            case AttributeType.Attack: atk += attr.value; break;
-            case AttributeType.Defense: def += attr.value; break;
-            case AttributeType.Speed: spd += attr.value; break;
-            case AttributeType.CritRate: crit += attr.value; break;
-            case AttributeType.HitRate: hit += attr.value; break;
-            case AttributeType.EvasionRate: eva += attr.value; break;
-            case AttributeType.ComboRate: combo += attr.value; break;
-            case AttributeType.StunRate: stun += attr.value; break;
-        }
     }
 
     public static FantasyStatusPanel Instance { get; private set; }

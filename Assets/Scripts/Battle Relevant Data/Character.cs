@@ -210,12 +210,39 @@ public class Character : MonoBehaviour
     // ★ 诛仙剑护盾持续时间（回合数）
     public int zhuXianShieldRemainingTurns = 0;   // 0表示没有诛仙剑护盾
 
+    // ★ 玄武玄甲护盾持续时间（回合数）
+    public int xuanWuShieldRemainingTurns = 0;    // 0表示没有玄甲护盾
+
     // ★ 通天教主专属：虚影死亡攻击力加成层数
     public int shadowDeathAttackBonusStacks = 0;
     public float shadowDeathAttackBonusValue = 0f;   // 每层+5%
 
     // ★ 追加攻击计数器（用于二/三阶段）
     public int consecutiveAttackCount = 0;
+
+    // ★ 朱雀涅槃：是否已使用过复活
+    public bool hasUsedPhoenixRebirth = false;
+
+    // ★ 白虎：逐血追击 — 每损失1%血量，增加1%攻击力
+    public float baiHuLostHpAttackBonus = 0f;
+
+    // ★ 白虎：虎煞噬魂 — 无敌状态
+    public bool isInvincible = false;           // 是否处于无敌状态（白虎专用）
+    public int invincibleRemaining = 0;         // 无敌剩余回合数（白虎专用）
+    public bool hasUsedInvincibleRevive = false; // 是否已使用过虎煞噬魂无敌触发
+
+    // ★ 朱雀：朱雀涅槃 — 复活后无敌状态（与白虎解耦）
+    public bool isPhoenixInvincible = false;    // 朱雀涅槃后是否处于无敌状态
+    public int phoenixInvincibleRemaining = 0;  // 朱雀涅槃后无敌剩余回合数
+
+    // ★ 青龙：龙之逆鳞 — 追加攻击计数器
+    public int qingLongConsecutiveAttacks = 0;
+
+    // ★ 玄武：玄龟之佑 — 低血量回血是否已使用
+    public bool xuanWuLowHpHealUsed = false;
+
+    // ★ 四象灵尊阵亡惩罚速度加成层数（每层+25%，最大值0.75）
+    public float deathPenaltySpeedBonus = 0f;
 
     public int MaxHP => cachedMaxHP;
     public int MaxMP => cachedMaxMP;
@@ -226,6 +253,31 @@ public class Character : MonoBehaviour
         get
         {
             int def = cachedDEF + extraDEF;
+
+            // ★ 四象灵尊镇岳阵防御加成（四神兽专属）
+            if (!string.IsNullOrEmpty(characterName) &&
+                (characterName == "青龙" || characterName == "白虎" ||
+                 characterName == "朱雀" || characterName == "玄武"))
+            {
+                BattleManager bm = FindObjectOfType<BattleManager>();
+                if (bm != null)
+                {
+                    float defBonusPercent = FourSymbolAura.GetDefenseBonusPercent(bm);
+                    if (defBonusPercent > 0)
+                    {
+                        // 找到玄武的防御力作为基准（用 cachedDEF 避免递归）
+                        foreach (var e in bm.enemyParty)
+                        {
+                            if (e.characterName == "玄武" && !e.IsDead())
+                            {
+                                def += Mathf.RoundToInt(e.cachedDEF * defBonusPercent);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             var debuff = attributeDebuffs.Find(d => d.attribute == "防御");
             if (debuff != null)
                 def = Mathf.RoundToInt(def * (1f - debuff.reducePercent));
@@ -268,7 +320,7 @@ public class Character : MonoBehaviour
             var debuff = attributeDebuffs.Find(d => d.attribute == "速度");
             if (debuff != null)
                 speed *= (1f - debuff.reducePercent);
-            return speed * (1f + 0.1f * windWingStacks) * GetSpeedMultiplier() * (xunJieActive ? 1.15f : 1f);
+            return speed * (1f + 0.1f * windWingStacks + deathPenaltySpeedBonus) * GetSpeedMultiplier() * (xunJieActive ? 1.15f : 1f);
         }
     }
 
@@ -278,7 +330,24 @@ public class Character : MonoBehaviour
 
     public int GetFinalATK()
     {
-        float multiplier = 1f + tempAttackBonus + (shengShengAttackBonusActive ? shengShengAttackBonusValue : 0f) + shadowDeathAttackBonusValue;
+        float baiHuBonus = 0f;
+        if (characterName == "白虎")
+        {
+            float hpPercent = MaxHP > 0 ? (float)currentHP / MaxHP : 1f;
+            baiHuBonus = Mathf.Clamp01(1f - hpPercent);
+        }
+        float multiplier = 1f + tempAttackBonus + (shengShengAttackBonusActive ? shengShengAttackBonusValue : 0f) + shadowDeathAttackBonusValue + baiHuBonus;
+
+        // ★ 四象灵尊杀伐阵攻击力加成（白虎存活时，所有四神兽受益）
+        if (!string.IsNullOrEmpty(characterName) &&
+            (characterName == "青龙" || characterName == "白虎" ||
+             characterName == "朱雀" || characterName == "玄武"))
+        {
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null)
+                multiplier += FourSymbolAura.GetAttackBonusPercent(bm);
+        }
+
         int baseATK = BaseATK;
         var debuff = attributeDebuffs.Find(d => d.attribute == "攻击");
         if (debuff != null)
@@ -289,6 +358,7 @@ public class Character : MonoBehaviour
     public float GetFinalCritRate()
     {
         float raw = cachedCritRate + tempCritRateBonus + (mingXinActive ? mingXinCritRateBonus : 0f) + xianXianCritBonus;
+
         if (nextCritRateBonusRemaining > 0)
             raw += nextCritRateBonus;
         var debuff = attributeDebuffs.Find(d => d.attribute == "暴击");
@@ -462,6 +532,9 @@ public class Character : MonoBehaviour
         // 诛仙剑护盾
         zhuXianShieldRemainingTurns = 0;
 
+        // 玄甲护盾（不重置，运行时动态管理）
+        xuanWuShieldRemainingTurns = 0;
+
         // 陷仙剑结界
         xianXianCritBonus = 0f;
 
@@ -469,6 +542,30 @@ public class Character : MonoBehaviour
         shadowDeathAttackBonusStacks = 0;
         shadowDeathAttackBonusValue = 0f;
         consecutiveAttackCount = 0;
+
+        // 朱雀涅槃标记（不重置，用于跨阶段保留状态）
+        // hasUsedPhoenixRebirth = false;
+
+        // 白虎逐血追击（不重置，持续到战斗结束）
+        // baiHuLostHpAttackBonus = 0f;
+
+        // 白虎虎煞噬魂无敌（不重置，持续到战斗结束）
+        // isInvincible = false;
+        // invincibleRemaining = 0;
+        // hasUsedInvincibleRevive = false;
+
+        // 朱雀涅槃后无敌（不重置，持续到战斗结束）
+        // isPhoenixInvincible = false;
+        // phoenixInvincibleRemaining = 0;
+
+        // 青龙追加攻击计数器（不重置）
+        // qingLongConsecutiveAttacks = 0;
+
+        // 玄武低血量回血（不重置）
+        // xuanWuLowHpHealUsed = false;
+
+        // 阵亡惩罚速度加成（不重置，持续到战斗结束）
+        // deathPenaltySpeedBonus = 0f;
     }
 
     public void Initialize()
@@ -828,6 +925,31 @@ public class Character : MonoBehaviour
     public void TakeDamage(int damage, bool isCrit = false)
     {
         int totalDamage = damage;
+
+        // ★ 白虎虎煞噬魂：无敌状态下，所有受到的伤害归零
+        if (isInvincible)
+        {
+            if (totalDamage > 0)
+            {
+                BattleManager bm = FindObjectOfType<BattleManager>();
+                if (bm != null)
+                    bm.AddTurnResultMessage($"{characterName} 处于无敌状态，免疫 {totalDamage} 点伤害");
+            }
+            return;
+        }
+
+        // ★ 朱雀涅槃后：无敌状态下，所有受到的伤害归零
+        if (isPhoenixInvincible)
+        {
+            if (totalDamage > 0)
+            {
+                BattleManager bm = FindObjectOfType<BattleManager>();
+                if (bm != null)
+                    bm.AddTurnResultMessage($"{characterName} 处于涅槃无敌状态，免疫 {totalDamage} 点伤害");
+            }
+            return;
+        }
+
         ShowHitEffect(true);
         if (totalDamage > 0) ShowDamage(totalDamage, isCrit);
         else return;
@@ -852,6 +974,79 @@ public class Character : MonoBehaviour
         }
         currentHP -= totalDamage;
         if (currentHP < 0) currentHP = 0;
+
+        // ★ 白虎虎煞噬魂：受到致命伤害时触发无敌
+        if (characterName == "白虎" && currentHP <= 0 && !hasUsedInvincibleRevive)
+        {
+            hasUsedInvincibleRevive = true;
+            // 清空自身所有负面及控制效果
+            ClearConfuse();
+            ClearStun();
+            ClearSleep();
+            attributeDebuffs.Clear();
+            burnRemainingTurns.Clear();
+            poisonRemainingTurns.Clear();
+            isInvincible = true;
+            invincibleRemaining = 3;
+            currentHP = 1; // 锁定为1血不死
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null)
+                bm.AddTurnResultMessage($"白虎虎煞噬魂触发，清空所有负面及控制效果，进入无敌状态3回合！");
+            return;
+        }
+
+        // ★ 玄武低血量回血：受伤时判断
+        if (characterName == "玄武" && !xuanWuLowHpHealUsed && (float)currentHP / MaxHP < 0.3f && currentHP > 0)
+        {
+            xuanWuLowHpHealUsed = true;
+            int lostHP = MaxHP - currentHP;
+            int healAmount = Mathf.RoundToInt(lostHP * 0.8f);
+            int actualHeal = Heal(healAmount);
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null)
+                bm.AddTurnResultMessage($"玄武玄龟之佑触发，恢复已损失血量的80%（{actualHeal}点）");
+        }
+
+        // ★ 朱雀涅槃：受到致命伤害时，若有任意敌人处于灼烧状态，立即触发其全部灼烧效果
+        if (characterName == "朱雀" && currentHP <= 0 && !hasUsedPhoenixRebirth)
+        {
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null)
+            {
+                // 检查是否有任意敌人处于灼烧状态
+                bool anyTargetBurning = false;
+                foreach (var target in bm.playerParty)
+                {
+                    if (target != null && target.burnRemainingTurns.Count > 0)
+                    {
+                        anyTargetBurning = true;
+                        // 立即触发全部灼烧伤害
+                        int burnDamage = Mathf.RoundToInt(target.MaxHP * 0.05f * target.burnRemainingTurns.Count);
+                        target.TakeDamage(burnDamage, false);
+                        bm.AddTurnResultMessage($"朱雀涅槃触发灼烧效果，{target.characterName} 受到 {burnDamage} 点灼烧伤害");
+                        target.ClearAllBurns();
+                        break;
+                    }
+                }
+                if (anyTargetBurning && bm != null)
+                {
+                    hasUsedPhoenixRebirth = true;
+                    int reviveHP = Mathf.RoundToInt(MaxHP * 0.75f);
+                    currentHP = reviveHP;
+                    // 清空自身所有负面及控制效果
+                    ClearConfuse();
+                    ClearStun();
+                    ClearSleep();
+                    attributeDebuffs.Clear();
+                    burnRemainingTurns.Clear();
+                    poisonRemainingTurns.Clear();
+                    // 免疫所有伤害和控制，持续1回合
+                    isPhoenixInvincible = true;
+                    phoenixInvincibleRemaining = 1;
+                    bm.AddTurnResultMessage($"朱雀涅槃触发！消耗敌人灼烧层数，以 {reviveHP} 点生命复活，清空负面及控制效果，免疫1回合！");
+                }
+            }
+        }
 
         // 阶段转换处理
         if (currentHP <= 0 && currentPhase < maxPhase)
@@ -906,18 +1101,18 @@ public class Character : MonoBehaviour
     {
         if (IsDead()) return;
         currentActionValue += CurrentSpeed * deltaTime;
-        if (currentActionValue > BattleManager.MAX_PREDICT_ACTION_THRESHOLD) currentActionValue = BattleManager.MAX_PREDICT_ACTION_THRESHOLD;
+        if (currentActionValue > 12000f) currentActionValue = 12000f;
     }
 
     public void SpendAction()
     {
-        currentActionValue -= BattleManager.ACTION_THRESHOLD;
+        currentActionValue -= 500f;
     }
 
     public float TimeToNextTurn()
     {
-        if (currentActionValue >= BattleManager.ACTION_THRESHOLD) return 0f;
-        return (BattleManager.ACTION_THRESHOLD - currentActionValue) / CurrentSpeed;
+        if (currentActionValue >= 500f) return 0f;
+        return (500f - currentActionValue) / CurrentSpeed;
     }
 
     public void ReduceCooldowns()
@@ -988,7 +1183,54 @@ public class Character : MonoBehaviour
             {
                 overHealShield = 0;
                 BattleManager bm = FindObjectOfType<BattleManager>();
-                if (bm != null) bm.AddTurnResultMessage($"{characterName} 的诛仙剑护盾消失了");
+                if (bm != null)
+                {
+                    bm.AddTurnResultMessage($"{characterName} 的诛仙剑护盾消失了");
+                }
+            }
+        }
+
+        // ★ 玄甲护盾持续时间减少
+        if (xuanWuShieldRemainingTurns > 0)
+        {
+            xuanWuShieldRemainingTurns--;
+            if (xuanWuShieldRemainingTurns <= 0)
+            {
+                overHealShield = 0;
+                BattleManager bm = FindObjectOfType<BattleManager>();
+                if (bm != null)
+                {
+                    bm.AddTurnResultMessage($"{characterName} 的玄甲护盾消失了");
+                }
+            }
+        }
+
+        // ★ 白虎虎煞噬魂无敌状态回合减少
+        if (isInvincible && invincibleRemaining > 0)
+        {
+            invincibleRemaining--;
+            if (invincibleRemaining <= 0)
+            {
+                isInvincible = false;
+                BattleManager bm = FindObjectOfType<BattleManager>();
+                if (bm != null)
+                {
+                    bm.AddTurnResultMessage($"{characterName} 的无敌状态结束，因虎煞噬魂契约而死亡！");
+                    // ★ 触发四象阵亡惩罚（移除光环、其他神兽增速）
+                    bm.OnFourSymbolDeath(this);
+                }
+                currentHP = 0; // 状态结束时死亡
+            }
+        }
+
+        // ★ 朱雀涅槃后无敌状态回合减少
+        if (isPhoenixInvincible && phoenixInvincibleRemaining > 0)
+        {
+            phoenixInvincibleRemaining--;
+            if (phoenixInvincibleRemaining <= 0)
+            {
+                isPhoenixInvincible = false;
+                // 朱雀无敌到期正常结束，没有额外惩罚
             }
         }
     }
@@ -1040,11 +1282,18 @@ public class Character : MonoBehaviour
     public void ApplyStun(int duration)
     {
         if (IsDead()) return;
+        // ★ 无敌期间免疫控制
+        if (isInvincible || isPhoenixInvincible)
+        {
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null) bm.AddTurnResultMessage($"{characterName} 处于无敌状态，免疫眩晕");
+            return;
+        }
         if (immuneToControl)
         {
             // 免疫眩晕，转化为行动条推迟
-            float pushAmount = BattleManager.ACTION_THRESHOLD * controlToPushMultiplier * duration;
-            currentActionValue = Mathf.Max(0, currentActionValue - pushAmount);
+            float pushAmount = 500f * controlToPushMultiplier * duration;
+            currentActionValue -= pushAmount;
             BattleManager bm = FindObjectOfType<BattleManager>();
             if (bm != null) bm.AddTurnResultMessage($"{characterName} 免疫眩晕，行动条推迟{pushAmount}");
             return;
@@ -1063,10 +1312,17 @@ public class Character : MonoBehaviour
     public void ApplyConfuse(int duration)
     {
         if (IsDead()) return;
+        // ★ 无敌期间免疫控制
+        if (isInvincible || isPhoenixInvincible)
+        {
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null) bm.AddTurnResultMessage($"{characterName} 处于无敌状态，免疫错乱");
+            return;
+        }
         if (immuneToControl)
         {
-            float pushAmount = BattleManager.ACTION_THRESHOLD * controlToPushMultiplier * duration;
-            currentActionValue = Mathf.Max(0, currentActionValue - pushAmount);
+            float pushAmount = 500f * controlToPushMultiplier * duration;
+            currentActionValue -= pushAmount;
             BattleManager bm = FindObjectOfType<BattleManager>();
             if (bm != null) bm.AddTurnResultMessage($"{characterName} 免疫错乱，行动条推迟{pushAmount}");
             return;
@@ -1085,10 +1341,17 @@ public class Character : MonoBehaviour
     public void ApplySleep(int duration)
     {
         if (IsDead()) return;
+        // ★ 无敌期间免疫控制
+        if (isInvincible || isPhoenixInvincible)
+        {
+            BattleManager bm = FindObjectOfType<BattleManager>();
+            if (bm != null) bm.AddTurnResultMessage($"{characterName} 处于无敌状态，免疫睡眠");
+            return;
+        }
         if (immuneToControl)
         {
-            float pushAmount = BattleManager.ACTION_THRESHOLD * controlToPushMultiplier * duration;
-            currentActionValue = Mathf.Max(0, currentActionValue - pushAmount);
+            float pushAmount = 500f * controlToPushMultiplier * duration;
+            currentActionValue -= pushAmount;
             BattleManager bm = FindObjectOfType<BattleManager>();
             if (bm != null) bm.AddTurnResultMessage($"{characterName} 免疫睡眠，行动条推迟{pushAmount}");
             return;
@@ -1212,6 +1475,62 @@ public class Character : MonoBehaviour
         BattleManager bm = FindObjectOfType<BattleManager>();
         if (bm != null)
             ProcessBurnAndPoisonAtTurnStart(bm);
+
+        // ★ 四神兽回合开始被动
+        if (bm != null)
+            ProcessFourSymbolPassivesAtTurnStart(bm);
+    }
+
+    /// <summary>
+    /// 四神兽回合开始被动效果
+    /// </summary>
+    private void ProcessFourSymbolPassivesAtTurnStart(BattleManager bm)
+    {
+        switch (characterName)
+        {
+            case "青龙":
+                break;
+
+            case "白虎":
+
+                break;
+
+            case "朱雀":
+
+                break;
+
+            case "玄武":
+                // 玄武回春：恢复全体友方10%最大生命值并驱散一个负面效果和控制效果
+                foreach (var ally in bm.enemyParty)
+                {
+                    if (ally != null && !ally.IsDead())
+                    {
+                        int turtleHeal = Mathf.RoundToInt(ally.MaxHP * 0.1f);
+                        int actualTurtleHeal = ally.Heal(turtleHeal);
+                        // 驱散一个负面效果
+                        if (ally.attributeDebuffs.Count > 0)
+                        {
+                            ally.attributeDebuffs.RemoveAt(ally.attributeDebuffs.Count - 1);
+                        }
+                        // 驱散控制效果
+                        if (ally.isStunned) ally.ClearStun();
+                        if (ally.isConfused) ally.ClearConfuse();
+                        if (ally.isSleep) ally.ClearSleep();
+                    }
+                }
+                bm.AddTurnResultMessage($"玄武回春触发，全体友方恢复10%生命并驱散负面效果和控制效果");
+
+                // 玄武被动：血量低于30%时，回复已损失血量的80%（每次战斗限一次）
+                if (!xuanWuLowHpHealUsed && (float)currentHP / MaxHP < 0.3f)
+                {
+                    xuanWuLowHpHealUsed = true;
+                    int lostHP = MaxHP - currentHP;
+                    int healAmount = Mathf.RoundToInt(lostHP * 0.8f);
+                    int actualHeal = Heal(healAmount);
+                    bm.AddTurnResultMessage($"玄武玄龟之佑触发，恢复已损失血量的80%（{actualHeal}点）");
+                }
+                break;
+        }
     }
 
     public void OnComboTriggered(BattleManager battleManager)
@@ -1264,7 +1583,7 @@ public class Character : MonoBehaviour
     {
         if (baGuaZhenYueActive)
         {
-            float increase = BattleManager.ACTION_THRESHOLD * 0.3f;
+            float increase = 500f * 0.3f;
             currentActionValue += increase;
             battleManager.AddTurnResultMessage($"{characterName} 镇岳状态触发，行动条增加30%");
         }
@@ -1346,7 +1665,7 @@ public class Character : MonoBehaviour
         }
         if (mingXinActive)
         {
-            float increase = BattleManager.ACTION_THRESHOLD * 0.2f;
+            float increase = 500f * 0.2f;
             currentActionValue += increase;
             battleManager.AddTurnResultMessage($"{characterName} 明心见性触发，行动条增加20%");
         }
@@ -1360,7 +1679,7 @@ public class Character : MonoBehaviour
         BattleManager battleManager = GameObject.FindObjectOfType<BattleManager>();
         if (battleManager != null)
         {
-            fleeChance = battleManager.fleeBaseChance + (this.CurrentSpeed / BattleManager.ACTION_THRESHOLD);
+            fleeChance = battleManager.fleeBaseChance + (this.CurrentSpeed / 500f);
         }
 
         string factionName = string.IsNullOrEmpty(faction) ? "无门派" : faction;
@@ -1423,7 +1742,7 @@ public class Character : MonoBehaviour
             $"生命: {currentHP}/{MaxHP}",
             $"内力: {currentMP}/{MaxMP}",
             $"护盾: {totalShield}/{maxShield}",
-            $"行动: {currentActionValue / BattleManager.ACTION_THRESHOLD * 100:F0}%");
+            $"行动: {currentActionValue / 500f * 100:F0}%");
 
         string penetrationStr = "0%";
         sb.AppendFormat("{0,-" + colWidth4 + "}{1,-" + colWidth4 + "}{2,-" + colWidth4 + "}{3,-" + colWidth4 + "}\n",
@@ -1469,6 +1788,8 @@ public class Character : MonoBehaviour
         if (isConfused) effectDescriptions.Add($"错乱：无法施展任何技能，普通攻击随机选择目标（包括队友）。剩余{confuseRemaining}回合");
         if (isStunned) effectDescriptions.Add($"眩晕：无法行动。剩余{stunRemaining}回合");
         if (isSleep) effectDescriptions.Add($"睡眠：无法行动，受到任何伤害后立即醒来。剩余{sleepRemaining}回合");
+        if (isInvincible) effectDescriptions.Add($"白虎虎煞噬魂无敌：免疫所有伤害和控制。剩余{invincibleRemaining}回合");
+        if (isPhoenixInvincible) effectDescriptions.Add($"朱雀涅槃无敌：免疫所有伤害和控制。剩余{phoenixInvincibleRemaining}回合");
         if (isDefending) effectDescriptions.Add($"防御中：所受伤害降低{defenseReduction * 100:F0}%。剩余{defenseRemaining}回合");
         if (isInArrayFormation) effectDescriptions.Add($"列阵（不动如山）：所受伤害降低{arrayFormationReduction * 100:F0}%，被攻击时{arrayFormationCounterChance * 100:F0}%概率反击（造成{reflectMult * 100:F0}%攻击力的固定伤害）；剩余{arrayFormationRemaining}回合");
         if (baGuaZhenYueActive) effectDescriptions.Add($"镇岳（五雷轰顶）：晕击概率提高{controlChanceBonus * 100:F0}%，成功晕击时拉条30%。剩余{baGuaZhenYueRemaining}回合");
@@ -1540,91 +1861,112 @@ public class Character : MonoBehaviour
         {
             effectDescriptions.Add($"诛仙剑护盾：吸收 {overHealShield} 伤害，剩余 {zhuXianShieldRemainingTurns} 回合");
         }
+        if (xuanWuShieldRemainingTurns > 0)
+        {
+            effectDescriptions.Add($"玄甲护体：吸收 {overHealShield} 伤害，剩余 {xuanWuShieldRemainingTurns} 回合");
+        }
         if (shadowDeathAttackBonusStacks > 0)
         {
             effectDescriptions.Add($"虚影祭献：攻击力+{shadowDeathAttackBonusValue * 100:F0}%（{shadowDeathAttackBonusStacks}层）");
         }
 
-        if (effectDescriptions.Count == 0) sb.AppendLine(" 无");
-        else foreach (var desc in effectDescriptions) sb.AppendLine($"- {desc}");
+        if (effectDescriptions.Count == 0) sb.AppendLine("  无");
+        else foreach (var desc in effectDescriptions) sb.AppendLine($"  {desc}");
 
         sb.AppendLine("主动技能:");
-        if (skills.Count == 0) sb.AppendLine(" 无");
+        if (skills.Count == 0) sb.AppendLine("  无");
         else
         {
-            const int colWidth3 = 26;
-            List<string> skillLines = new List<string>();
             foreach (var skill in skills)
             {
-                string cdText = skill.currentCooldown > 0 ? $"CD{skill.currentCooldown}" : "可用";
-                skillLines.Add($"- {skill.skillName}: {cdText}");
-            }
-            for (int i = 0; i < skillLines.Count; i += 3)
-            {
-                string col1 = i < skillLines.Count ? skillLines[i] : "";
-                string col2 = i + 1 < skillLines.Count ? skillLines[i + 1] : "";
-                string col3 = i + 2 < skillLines.Count ? skillLines[i + 2] : "";
-                sb.AppendFormat("{0,-" + colWidth3 + "}{1,-" + colWidth3 + "}{2,-" + colWidth3 + "}\n", col1, col2, col3);
+                string cdText = skill.currentCooldown > 0 ? $"（冷却 {skill.currentCooldown} 回合）" : "（可用）";
+                sb.AppendLine($"  - {skill.skillName} {cdText}，消耗 {skill.mpCost}MP，{skill.description}");
             }
         }
 
         sb.AppendLine("被动技能:");
-        sb.AppendLine("被动技能:");
         switch (faction)
         {
             case "TianWangDian":
-                sb.AppendLine($"- 生生不息：连击时回复15%生命，攻击力+15%（当前剩余 {shengShengAttackBonusRemaining} 回合）");
-                sb.AppendLine($"- 迅疾如风：反击伤害+30%");
-                sb.AppendLine($"- 蓄势待发：连击可多次触发，每次触发连击时获得“敛锋”状态（提升自身10%伤害/5%防御忽视，并降低自身10%连击概率），可叠加，持续到本回合结束。当前敛锋层数：{lianFengStacks}");
+                sb.AppendLine($"  - 生生不息：连击时回复15%生命，攻击力+15%（当前剩余 {shengShengAttackBonusRemaining} 回合）");
+                sb.AppendLine($"  - 迅疾如风：反击伤害+30%");
+                sb.AppendLine($"  - 蓄势待发：连击可多次触发，每次触发连击时获得“敛锋”状态（提升自身10%伤害/5%防御忽视，并降低自身10%连击概率），可叠加，持续到本回合结束。当前敛锋层数：{lianFengStacks}");
                 break;
             case "WuZhuangGuan":
-                sb.AppendLine($"- 混元道体：受击15%反晕（本回合已触发：{(hunYuanDaoTiTriggeredThisTurn ? "是" : "否")}）");
+                sb.AppendLine($"  - 混元道体：受击15%反晕（本回合已触发：{(hunYuanDaoTiTriggeredThisTurn ? "是" : "否")}）");
                 string tianDiTongShouStatus = damageTakenIncreaseRemaining > 0 ? $"目标易伤 {damageTakenIncrease * 100:F0}% 剩余 {damageTakenIncreaseRemaining} 回合" : "未激活";
-                sb.AppendLine($"- 天地同寿：眩晕成功时回复15%生命，使目标易伤10%（{tianDiTongShouStatus}）");
-                sb.AppendLine($"- 道玄缚祟：每次攻击前随机施加一个负面效果（除生命外的战斗属性降低10%），持续2回合，并对己方全体施加“迅捷”状态（提升15%速度，持续2回合，不可叠加）；攻击时，敌方每存在一个负面效果，提升15%伤害，最多75%。");
+                sb.AppendLine($"  - 天地同寿：眩晕成功时回复15%生命，使目标易伤10%（{tianDiTongShouStatus}）");
+                sb.AppendLine($"  - 道玄缚祟：每次攻击前随机施加一个负面效果（除生命外的战斗属性降低10%），持续2回合，并对己方全体施加“迅捷”状态（提升15%速度，持续2回合，不可叠加）；攻击时，敌方每存在一个负面效果，提升15%伤害，最多75%。");
                 break;
             case "FangCunShan":
                 string poWangStatus = hitRateDecreaseRemaining > 0 ? $"目标命中-{hitRateDecrease * 100:F0}% 剩余 {hitRateDecreaseRemaining} 回合" : "未激活";
-                sb.AppendLine($"- 破妄之眼：受击80%使目标命中-10%（{poWangStatus}）");
-                sb.AppendLine($"- 慧灯永续：暴击时回复15%生命，命中率+15%（当前命中加成{huiDengHitBonus * 100:F0}%）");
-                sb.AppendLine($"- 妙法承佑：将溢出的暴击率按200%比例转化为暴伤系数；暴击时忽视敌方10%防御，并为己方全体成员施加相当于此次伤害20%的护盾。");
+                sb.AppendLine($"  - 破妄之眼：受击80%使目标命中-10%（{poWangStatus}）");
+                sb.AppendLine($"  - 慧灯永续：暴击时回复15%生命，命中率+15%（当前命中加成{huiDengHitBonus * 100:F0}%）");
+                sb.AppendLine($"  - 妙法承佑：将溢出的暴击率按200%比例转化为暴伤系数；暴击时忽视敌方10%防御，并为己方全体成员施加相当于此次伤害20%的护盾。");
                 break;
             default:
                 // 根据角色名字显示被动
                 switch (characterName)
                 {
                     case "通天教主":
-                        sb.AppendLine($"- 天生圣体：免疫常规控制，被控时行动条推迟{controlToPushMultiplier * 100:F0}% * 持续回合数；常驻免伤{damageReductionPercent * 100:F0}%，反弹{reflectDamagePercent * 100:F0}%伤害；");
-                        sb.AppendLine($"- 虚影祭献：每有一把虚影被消灭，扣除自身最大生命值10%，提升10%攻击力（当前{shadowDeathAttackBonusStacks}层，+{shadowDeathAttackBonusValue * 100:F0}%攻击）");
+                        sb.AppendLine($"  - 天生圣体：免疫常规控制，被控时行动条推迟{controlToPushMultiplier * 100:F0}% * 持续回合数；常驻免伤{damageReductionPercent * 100:F0}%，反弹{reflectDamagePercent * 100:F0}%伤害；");
+                        sb.AppendLine($"  - 虚影祭献：每有一把虚影被消灭，扣除自身最大生命值10%，提升10%攻击力（当前{shadowDeathAttackBonusStacks}层，+{shadowDeathAttackBonusValue * 100:F0}%攻击）");
                         // ★ 新增：剑意如潮被动
                         if (currentPhase >= 2)
                         {
                             if (currentPhase == 2)
-                                sb.AppendLine($"- 剑意如潮（二阶段）：每三次主动攻击后追加一次普通攻击。");
+                                sb.AppendLine($"  - 剑意如潮（二阶段）：每三次主动攻击后追加一次普通攻击。");
                             else if (currentPhase == 3)
-                                sb.AppendLine($"- 剑意如潮（三阶段）：每两次主动攻击后追加一次普通攻击，并填充自身50%行动条。");
+                                sb.AppendLine($"  - 剑意如潮（三阶段）：每两次主动攻击后追加一次普通攻击，并填充自身50%行动条。");
                         }
                         else
                         {
-                            sb.AppendLine($"- 剑意如潮：未激活（进入二阶段后生效）");
+                            sb.AppendLine($"  - 剑意如潮：未激活（进入二阶段后生效）");
                         }
                         break;
                     case "诛仙剑":
                     case "陷仙剑":
                     case "绝仙剑":
                     case "戮仙剑":
-                        sb.AppendLine($"- 不灭剑意：免疫常规控制，被控时行动条推迟{controlToPushMultiplier * 100:F0}% * 持续回合数；常驻免伤{damageReductionPercent * 100:F0}%，反弹{reflectDamagePercent * 100:F0}%伤害；");
-                        sb.AppendLine($"- 协同作战：行动后，使通天教主行动条填充10%");
+                        sb.AppendLine($"  - 不灭剑意：免疫常规控制，被控时行动条推迟{controlToPushMultiplier * 100:F0}% * 持续回合数；常驻免伤{damageReductionPercent * 100:F0}%，反弹{reflectDamagePercent * 100:F0}%伤害；");
+                        sb.AppendLine($"  - 协同作战：行动后，使通天教主行动条填充10%");
+                        break;
+                    case "青龙":
+                        sb.AppendLine($"  - 龙之逆鳞：每次攻击时，减少目标10%行动条；攻击后自身行动条填充10%。每三次主动攻击后追加一次普通攻击，并填充自身30%行动条。");
+                        sb.AppendLine($"  - 御风阵（光环）：全体友方每次攻击时，减少目标10%行动条。");
+                        sb.AppendLine($"  - 四象联动（被动）：任意神兽行动时，其余三只获得10%行动条填充。");
+                        sb.AppendLine($"  - 阵亡惩罚（被动）：阵亡时，其余存活神兽速度提升15%。");
+                        break;
+                    case "白虎":
+                        sb.AppendLine($"  - 虎煞噬魂：暴击时额外造成目标最大生命值15%的真实伤害。当前血量每损失1%，获得1%攻击力加成，持续到战斗结束。当前攻击力加成：{Mathf.Clamp01(1f - (MaxHP > 0 ? (float)currentHP / MaxHP : 1f)) * 100:F0}%。受到致命伤害时获得3回合无敌状态：清空自身所有负面及控制效果，免疫所有伤害和控制效果，状态结束时死亡。无敌状态：{(isInvincible ? $"激活中（剩余{invincibleRemaining}回合）" : "未激活")}。");
+                        sb.AppendLine($"  - 杀伐阵（光环）：全体友方攻击力提升15%。");
+                        sb.AppendLine($"  - 四象联动（被动）：任意神兽行动时，其余三只获得10%行动条填充。");
+                        sb.AppendLine($"  - 阵亡惩罚（被动）：阵亡时，其余存活神兽速度提升15%。");
+                        break;
+                    case "朱雀":
+                        string rebirthStatus = hasUsedPhoenixRebirth ? "已使用" : "未使用";
+                        string phoenixInvStatus = isPhoenixInvincible ? $"激活中（剩余{phoenixInvincibleRemaining}回合）" : "未激活";
+                        sb.AppendLine($"  - 朱雀涅槃：受到致命伤害时，若任意敌方角色处于灼烧状态，立即触发其全部灼烧效果，并以75%最大生命值复活（每次战斗限一次）；复活后清空自身所有负面及控制效果，免疫所有伤害和控制效果，持续1回合。状态：{rebirthStatus}。涅槃无敌：{phoenixInvStatus}。");
+                        sb.AppendLine($"  - 焚野阵（光环）：全体友方攻击时附带灼烧效果，持续2回合。");
+                        sb.AppendLine($"  - 四象联动（被动）：任意神兽行动时，其余三只获得10%行动条填充。");
+                        sb.AppendLine($"  - 阵亡惩罚（被动）：阵亡时，其余存活神兽速度提升15%。");
+                        break;
+                    case "玄武":
+                        string lowHpHealStatus = xuanWuLowHpHealUsed ? "已使用" : "未使用";
+                        sb.AppendLine($"  - 玄武回春：每回合开始时恢复全体友方10%最大生命值并驱散一个负面效果和控制效果；血量低于30%时，回复已损失血量的80%（每次战斗限一次）。低血量回春状态：{lowHpHealStatus}。");
+                        sb.AppendLine($"  - 镇岳阵（光环）：为全体友方提升防御力，数值相当于自身防御力的30%；并且，玄武会为其他友方分摊50%的伤害。");
+                        sb.AppendLine($"  - 四象联动（被动）：任意神兽行动时，其余三只获得10%行动条填充。");
+                        sb.AppendLine($"  - 阵亡惩罚（被动）：阵亡时，其余存活神兽速度提升15%。");
                         break;
                     default:
-                        sb.AppendLine(" 无");
+                        sb.AppendLine("  无");
                         break;
                 }
                 break;
         }
 
-        sb.AppendLine("法宝:");
-        if (equippedArtifacts.Count == 0 || equippedArtifacts.All(a => a == null)) sb.AppendLine(" 无");
+        sb.AppendLine("  法宝:");
+        if (equippedArtifacts.Count == 0 || equippedArtifacts.All(a => a == null)) sb.AppendLine("  无");
         else
         {
             foreach (var art in equippedArtifacts)
@@ -1639,7 +1981,7 @@ public class Character : MonoBehaviour
                     case ArtifactEffect.HuXinJing: extra = heartMirrorUsed ? "(已触发)" : "(未触发)"; break;
                     case ArtifactEffect.FengLeiYi: extra = fengLeiYiTriggeredThisTurn ? "(本回合已触发)" : "(未触发)"; break;
                 }
-                sb.AppendLine($"- {art.itemName}：{effectDesc} {extra}");
+                sb.AppendLine($"  - {art.itemName}：{effectDesc} {extra}");
             }
         }
 
@@ -1678,10 +2020,23 @@ public class Character : MonoBehaviour
     private void ShowStunEffect(bool show) { if (stunEffectObject != null) stunEffectObject.SetActive(show); }
     private void ShowConfuseEffect(bool show) { if (confuseEffectObject != null) confuseEffectObject.SetActive(show); }
     private void ShowSleepEffect(bool show) { if (sleepEffectObject != null) sleepEffectObject.SetActive(show); }
+    private Coroutine hitEffectCoroutine;
+
     private void ShowHitEffect(bool show)
     {
         if (hitEffectObject == null) return;
-        StartCoroutine(PlayHitEffectCoroutine());
+        if (show)
+        {
+            if (hitEffectCoroutine != null)
+                StopCoroutine(hitEffectCoroutine);
+            hitEffectCoroutine = StartCoroutine(PlayHitEffectCoroutine());
+        }
+        else
+        {
+            if (hitEffectCoroutine != null)
+                StopCoroutine(hitEffectCoroutine);
+            hitEffectObject.SetActive(false);
+        }
     }
     private IEnumerator PlayHitEffectCoroutine()
     {

@@ -546,6 +546,7 @@ MonoBehaviour:
   joystick: {fileID: 711253996}
   moveSpeed: 800
   animator: {fileID: 0}
+  enemyDatabase: {fileID: 11400000, guid: dd8f1579e790e5c41a684fe0088f068e, type: 2}
 --- !u!95 &97481016
 Animator:
   serializedVersion: 5
@@ -2841,6 +2842,7 @@ MonoBehaviour:
   joystick: {fileID: 711253996}
   moveSpeed: 5
   animator: {fileID: 0}
+  enemyDatabase: {fileID: 0}
 --- !u!222 &1305372557
 CanvasRenderer:
   m_ObjectHideFlags: 0

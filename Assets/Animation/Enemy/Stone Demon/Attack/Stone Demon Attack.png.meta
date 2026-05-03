@@ -106,6 +106,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -126,27 +139,6 @@ TextureImporter:
       bones: []
       spriteID: 33f110acbcabf7b4f8b95e7451a04e6e
       internalID: -1179922222
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Stone Demon Attack_1
-      rect:
-        serializedVersion: 2
-        x: 560
-        y: 514
-        width: 355
-        height: 442
-      alignment: 9
-      pivot: {x: 0.33659032, y: 0.5278899}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6ccca553f4d59b34e80a460654bfa2f3
-      internalID: 663013026
       vertices: []
       indices: 
       edges: []
@@ -173,43 +165,43 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Stone Demon Attack_2
+      name: Stone Demon Attack_1
       rect:
         serializedVersion: 2
-        x: 516
-        y: 0
-        width: 444
-        height: 484
+        x: 531
+        y: 524
+        width: 404
+        height: 435
       alignment: 9
-      pivot: {x: 0.42977342, y: 0.44906124}
+      pivot: {x: 0.54487205, y: 0.4833304}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 43536cf1d8c5a01458a018b6369c7d70
-      internalID: 1103646485
+      spriteID: 630804c70ed9c8047b532984f0407aad
+      internalID: 663013026
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Stone Demon Attack_4
+      name: Stone Demon Attack_2
       rect:
         serializedVersion: 2
-        x: 12
-        y: 15
-        width: 482
-        height: 455
+        x: 0
+        y: 10
+        width: 492
+        height: 467
       alignment: 9
-      pivot: {x: 0.22017789, y: 0.4808757}
+      pivot: {x: 0.3924095, y: 0.45807612}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 605139f2b02926f44b0d5462927ac544
-      internalID: 293673112
+      spriteID: da1b5b57d9482f34e9ff360b19e11b86
+      internalID: 1103646485
       vertices: []
       indices: 
       edges: []

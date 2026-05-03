@@ -68,6 +68,9 @@ public class BattleManager : MonoBehaviour
     public TMP_Text detailText;
     public Button exitButton;
 
+    [Header("UI管理器（可选）")]
+    public BattleUIManager uiManager;
+
     private enum BattleState { Idle, PlayerTurn, EnemyTurn, BattleEnd, SelectingTarget }
     private BattleState currentState = BattleState.Idle;
     private bool battleActive = false;
@@ -89,6 +92,7 @@ public class BattleManager : MonoBehaviour
 
     private int currentTurnDamage = 0;
     private Coroutine hideDamageCoroutine = null;
+    private BattleActionSystem actionSystem;
 
     void Start()
     {
@@ -105,14 +109,40 @@ public class BattleManager : MonoBehaviour
         foreach (var c in allCharacters)
             c.Initialize();
 
-        CreateActionQueueIcons();
+        // 初始化 BattleActionSystem（如果 uiManager 存在）
+        if (uiManager != null)
+        {
+            actionSystem = new BattleActionSystem(this, uiManager, allCharacters);
+            actionSystem.onSetIconScale = (character) => SetIconScale(character, 1f);
+            actionSystem.onCheckBattleEnd = () => CheckBattleEnd();
+        }
 
-        if (fleeButton != null)
-            fleeButton.onClick.AddListener(OnFlee);
-        if (defendButton != null)
-            defendButton.onClick.AddListener(OnDefend);
-        if (cancelButton != null)
-            cancelButton.onClick.AddListener(OnCancelSkill);
+        // 绑定 BattleUIManager 事件回调（如果存在）
+        if (uiManager != null)
+        {
+            uiManager.onFleeClicked = () => OnFlee();
+            uiManager.onDefendClicked = () => OnDefend();
+            uiManager.onCancelClicked = () => OnCancelSkill();
+            uiManager.onSkillSelected = (skill) => OnSkillClicked(skill);
+            uiManager.onQueueIconClicked = (character) => OnQueueIconClicked(character);
+            uiManager.Initialize();
+
+            // ★ 创建并初始化行动队列图标（UIManager 模式下必须调用，否则不会显示）
+            uiManager.CreateActionQueueIcons(allCharacters);
+            uiManager.UpdateActionQueueOrder(allCharacters);
+        }
+        else
+        {
+            // 兼容模式：使用原有的直接绑定方式
+            CreateActionQueueIcons();
+
+            if (fleeButton != null)
+                fleeButton.onClick.AddListener(OnFlee);
+            if (defendButton != null)
+                defendButton.onClick.AddListener(OnDefend);
+            if (cancelButton != null)
+                cancelButton.onClick.AddListener(OnCancelSkill);
+        }
 
         if (battleResultText != null)
             battleResultText.gameObject.SetActive(false);
@@ -192,13 +222,8 @@ public class BattleManager : MonoBehaviour
 
         for (int i = 0; i < BattleData.enemyConfigs.Count; i++)
         {
-            float posX = fixedX;
+            float posX = i == 0 ? fixedX : fixedX + 150;
             float posY;
-            if (i != 0)
-            {
-                posX = fixedX + 150;
-            }
-
             switch (i % 2)
             {
                 case 0:
@@ -309,6 +334,8 @@ public class BattleManager : MonoBehaviour
                 // 强制覆盖基础属性（忽略计算）
                 character.currentHP = 60000;
                 character.cachedMaxHP = 60000;
+                character.currentMP = 5000;
+                character.cachedMaxMP = 5000;
                 character.cachedATK = 7000;
                 character.cachedDEF = 4500;
                 character.cachedHitRate = 1.5f;
@@ -331,6 +358,149 @@ public class BattleManager : MonoBehaviour
                 character.controlToPushMultiplier = 0.25f; // 每回合推迟25%行动条
 
                 character.isCustomStats = true;
+            }
+
+            // ★ 四象灵尊（青龙、白虎、朱雀、玄武）
+
+            if (character.characterName == "青龙" ||
+                character.characterName == "白虎" ||
+                character.characterName == "朱雀" ||
+                character.characterName == "玄武")
+            {
+                // 设为基础自定义属性，由 SpawnEnemies 覆盖
+                character.isCustomStats = true;
+                character.isEliteOrBoss = true;
+
+                switch (character.characterName)
+                {
+                    case "青龙":
+                        character.cachedMaxHP = 36000;
+                        character.cachedMaxMP = 3000;
+                        character.cachedATK = 7000;
+                        character.cachedDEF = 4000;
+                        character.cachedSPD = 600f;
+                        character.cachedHitRate = 1.35f;
+                        character.cachedCritRate = 0.15f;
+                        character.cachedCritDamage = 1.5f;
+                        character.damageReductionPercent = 0.25f;
+                        break;
+                    case "白虎":
+                        character.cachedMaxHP = 36000;
+                        character.cachedMaxMP = 3000;
+                        character.cachedATK = 8000;
+                        character.cachedDEF = 4000;
+                        character.cachedSPD = 550f;
+                        character.cachedHitRate = 1.5f;
+                        character.cachedCritRate = 0.8f;
+                        character.cachedCritDamage = 2.0f;
+                        character.damageReductionPercent = 0.25f;
+                        break;
+                    case "朱雀":
+                        character.cachedMaxHP = 36000;
+                        character.cachedMaxMP = 3000;
+                        character.cachedATK = 6000;
+                        character.cachedDEF = 4000;
+                        character.cachedSPD = 600f;
+                        character.cachedHitRate = 1.2f;
+                        character.cachedCritRate = 0.10f;
+                        character.damageReductionPercent = 0.25f;
+                        break;
+                    case "玄武":
+                        character.cachedMaxHP = 60000;
+                        character.cachedMaxMP = 3000;
+                        character.cachedATK = 5000;
+                        character.cachedDEF = 6000;
+                        character.cachedSPD = 600f;
+                        character.cachedHitRate = 1.2f;
+                        character.cachedCritRate = 0.05f;
+                        character.damageReductionPercent = 0.25f;
+                        break;
+                }
+                character.currentHP = character.cachedMaxHP;
+                character.currentMP = character.cachedMaxMP;
+
+                // 添加四神兽光环组件
+                FourSymbolAura aura = character.gameObject.AddComponent<FourSymbolAura>();
+                FourSymbolAura.SymbolType auraType = FourSymbolAura.SymbolType.None;
+                switch (character.characterName)
+                {
+                    case "青龙": auraType = FourSymbolAura.SymbolType.Dragon; break;
+                    case "白虎": auraType = FourSymbolAura.SymbolType.Tiger; break;
+                    case "朱雀": auraType = FourSymbolAura.SymbolType.Bird; break;
+                    case "玄武": auraType = FourSymbolAura.SymbolType.Turtle; break;
+                }
+                aura.Initialize(character, this, auraType);
+
+                // 添加普通攻击
+                character.skills.Clear();
+                character.skills.Add(new Skill
+                {
+                    skillName = "普通攻击",
+                    type = SkillType.Attack,
+                    mpCost = 0,
+                    cooldown = 0,
+                    currentCooldown = 0,
+                    isFreeAction = false,
+                    skillID = 0,
+                    description = "对敌人造成100%攻击力的伤害"
+                });
+
+                // 添加专属主动技能
+                switch (character.characterName)
+                {
+                    case "青龙":
+                        character.skills.Add(new Skill
+                        {
+                            skillName = "龙爪裂甲",
+                            type = SkillType.Attack,
+                            mpCost = 20,
+                            cooldown = 3,
+                            currentCooldown = 0,
+                            isFreeAction = false,
+                            skillID = 700,
+                            description = "单体物理伤害，系数120%，并减少目标20%防御力，持续3回合"
+                        });
+                        break;
+                    case "白虎":
+                        character.skills.Add(new Skill
+                        {
+                            skillName = "虎啸震林",
+                            type = SkillType.Attack,
+                            mpCost = 20,
+                            cooldown = 3,
+                            currentCooldown = 0,
+                            isFreeAction = false,
+                            skillID = 701,
+                            description = "单体物理伤害，系数150%"
+                        });
+                        break;
+                    case "朱雀":
+                        character.skills.Add(new Skill
+                        {
+                            skillName = "雀羽焚天",
+                            type = SkillType.Attack,
+                            mpCost = 25,
+                            cooldown = 3,
+                            currentCooldown = 0,
+                            isFreeAction = false,
+                            skillID = 702,
+                            description = "单体法术伤害，系数120%，附带灼烧，持续4回合"
+                        });
+                        break;
+                    case "玄武":
+                        character.skills.Add(new Skill
+                        {
+                            skillName = "玄甲护体",
+                            type = SkillType.Defense,
+                            mpCost = 30,
+                            cooldown = 3,
+                            currentCooldown = 0,
+                            isFreeAction = false,
+                            skillID = 703,
+                            description = "为自身施加一个护盾，吸收相当于自身最大生命值50%的伤害，持续4回合（不可叠加）"
+                        });
+                        break;
+                }
             }
 
 
@@ -440,7 +610,7 @@ public class BattleManager : MonoBehaviour
         UpdateUI();
     }
 
-    void UpdateUI()
+    public void UpdateUI()
     {
         for (int i = 0; i < playerParty.Count; i++)
         {
@@ -492,7 +662,10 @@ public class BattleManager : MonoBehaviour
             if (c.iconImage != null)
                 c.iconImage.gameObject.SetActive(!c.IsDead());
 
-        UpdateQueueOrder();
+        if (uiManager != null)
+            uiManager.UpdateActionQueueOrder(allCharacters);
+        else
+            UpdateQueueOrder();
 
         bool playerTurn = (currentState == BattleState.PlayerTurn) && !CheckBattleEnd();
         if (fleeButton != null) fleeButton.interactable = playerTurn;
@@ -515,35 +688,57 @@ public class BattleManager : MonoBehaviour
 
     void UpdateQueueOrder()
     {
-        List<Character> predicted = PredictNextActions(maxQueueLength);
         characterIconMap.Clear();
 
-        float maxSpeed = -1f;
-        foreach (var c in allCharacters)
+        var living = allCharacters.Where(c => !c.IsDead()).ToList();
+        if (living.Count == 0) return;
+
+        // 用初始 predTime = (ACTION_THRESHOLD - Cur) / SPD 排序预测
+        var predTime = new Dictionary<Character, float>();
+        foreach (var c in living)
         {
-            if (!c.IsDead() && c.CurrentSpeed > maxSpeed)
-                maxSpeed = c.CurrentSpeed;
+            float remaining = ACTION_THRESHOLD - c.currentActionValue;
+            predTime[c] = remaining / c.CurrentSpeed;
         }
 
-        Dictionary<Character, int> appearanceCount = new Dictionary<Character, int>();
-        int globalLaps = 0;
-        int isCurrentActorAndSpdMax = 0;
+        // 预测 maxQueueLength 次行动，记录每个位置的剩余行动值
+        var predictedWithTime = new List<(Character character, float remainingTime)>();
+        var workingTime = new Dictionary<Character, float>(predTime);
+
+        while (predictedWithTime.Count < maxQueueLength)
+        {
+            Character next = null;
+            float minTime = float.MaxValue;
+            foreach (var c in living)
+            {
+                float t = workingTime[c];
+                if (t < minTime)
+                {
+                    minTime = t;
+                    next = c;
+                }
+            }
+            if (next == null) break;
+
+            predictedWithTime.Add((next, minTime));
+            workingTime[next] = minTime + ACTION_THRESHOLD / next.CurrentSpeed;
+        }
 
         for (int i = 0; i < queueIcons.Count; i++)
         {
             GameObject icon = queueIcons[i];
-            if (i < predicted.Count)
+            if (i < predictedWithTime.Count)
             {
-                Character c = predicted[i];
+                var (character, remainingTime) = predictedWithTime[i];
                 icon.SetActive(true);
 
                 Transform iconTransform = icon.transform.Find("Icon");
                 if (iconTransform != null)
                 {
                     Image iconImage = iconTransform.GetComponent<Image>();
-                    if (iconImage != null && c.queueIconSprite != null)
+                    if (iconImage != null && character.queueIconSprite != null)
                     {
-                        iconImage.sprite = c.queueIconSprite;
+                        iconImage.sprite = character.queueIconSprite;
                         iconImage.gameObject.SetActive(true);
                     }
                     else if (iconImage != null)
@@ -552,85 +747,21 @@ public class BattleManager : MonoBehaviour
                     }
                 }
 
-                if (!appearanceCount.ContainsKey(c))
-                    appearanceCount[c] = 0;
-                appearanceCount[c]++;
-
-                if (c.CurrentSpeed >= maxSpeed - 0.001f && appearanceCount[c] >= 2)
-                {
-                    globalLaps++;
-                }
-
                 TMP_Text tmp = icon.GetComponentInChildren<TMP_Text>();
                 if (tmp != null)
                 {
-                    bool isCurrentActor = (c == currentActor && (currentState == BattleState.PlayerTurn || currentState == BattleState.EnemyTurn || currentState == BattleState.SelectingTarget));
-                    if (isCurrentActor && appearanceCount[c] <= 1)
-                    {
-                        tmp.text = "";
-                        tmp.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        if (isCurrentActor && c.CurrentSpeed >= maxSpeed - 0.001f)
-                        {
-                            isCurrentActorAndSpdMax = 1;
-                        }
-                        float val = c.currentActionValue + 0.0001f;
-                        int laps = Mathf.FloorToInt(val / ACTION_THRESHOLD);
-                        float mod = val - (laps - isCurrentActorAndSpdMax) * ACTION_THRESHOLD;
-                        if (mod < 0) mod += ACTION_THRESHOLD;
-                        float progress = mod / ACTION_THRESHOLD * 100f;
-                        float ready = globalLaps * 100f + (100f - progress);
-                        int readyInt = Mathf.RoundToInt(ready);
-                        tmp.text = readyInt.ToString();
-                        tmp.gameObject.SetActive(true);
-                    }
+                    int displayVal = Mathf.RoundToInt(remainingTime * 100f);
+                    tmp.text = displayVal.ToString();
+                    tmp.gameObject.SetActive(true);
                 }
 
-                characterIconMap[c] = icon;
+                characterIconMap[character] = icon;
             }
             else
             {
                 icon.SetActive(false);
             }
-
-            isCurrentActorAndSpdMax = 0;
         }
-    }
-
-    List<Character> PredictNextActions(int count)
-    {
-        var result = new List<Character>();
-        var living = allCharacters.Where(c => !c.IsDead()).ToList();
-        if (living.Count == 0) return result;
-
-        var predAction = new Dictionary<Character, float>();
-        foreach (var c in living) predAction[c] = c.currentActionValue;
-
-        while (result.Count < count)
-        {
-            float minTime = float.MaxValue;
-            foreach (var c in living)
-            {
-                float time = (predAction[c] >= ACTION_THRESHOLD) ? 0f : (ACTION_THRESHOLD - predAction[c]) / c.CurrentSpeed;
-                if (time < minTime) minTime = time;
-            }
-
-            foreach (var c in living)
-                predAction[c] += c.CurrentSpeed * minTime;
-
-            var actingNow = living.Where(c => predAction[c] >= ACTION_THRESHOLD).ToList();
-            actingNow.Sort((a, b) => predAction[b].CompareTo(predAction[a]));
-
-            foreach (var c in actingNow)
-            {
-                if (result.Count >= count) break;
-                result.Add(c);
-                predAction[c] -= ACTION_THRESHOLD;
-            }
-        }
-        return result;
     }
 
     void GenerateSkillButtons(Character character)
@@ -819,19 +950,30 @@ public class BattleManager : MonoBehaviour
         else
         {
             hasUsedMainActionThisTurn = true;
+
+            // ★ 先执行回合结束清理（冷却、状态、临时buff、技能按钮）
+            EndPlayerTurnCleanup();
+
+            // ★ 先扣行动值（正常结束本回合的消耗）
+            currentActor.SpendAction();
+
+            // ★ 再检查风雷翼：如果有额外行动，重新填充行动条
             TryTriggerFengLeiYi(currentActor);
-            if (!currentActor.fengLeiYiTriggeredThisTurn)
-                EndPlayerTurn();
+            if (currentActor.fengLeiYiTriggeredThisTurn)
+            {
+                // 已由 TryTriggerFengLeiYi 设为 ACTION_THRESHOLD
+                // 不设 currentState = Idle，让 Update 循环在下一帧检测到满行动条角色
+                currentState = BattleState.Idle;
+            }
             else
             {
                 currentState = BattleState.Idle;
-                EnableTargetSelectionForSkill(null);
             }
         }
         UpdateUI();
     }
 
-    void OnCancelSkill()
+    public void OnCancelSkill()
     {
         if (currentState != BattleState.SelectingTarget) return;
 
@@ -841,6 +983,18 @@ public class BattleManager : MonoBehaviour
         GenerateSkillButtons(currentActor);
         AddTurnResultMessage($"{currentActor.characterName} 取消了技能选择");
         UpdateUI();
+    }
+
+    /// <summary>
+    /// 点击行动队列中的角色图标时的处理
+    /// </summary>
+    public void OnQueueIconClicked(Character character)
+    {
+        if (currentState == BattleState.SelectingTarget && character != null && !character.IsDead())
+        {
+            // 通过行动队列图标选择目标
+            OnTargetSelectedForSkill(character, selectedSkill);
+        }
     }
 
     IEnumerator ExecuteSkill(Character caster, Character target, Skill skill)
@@ -865,6 +1019,31 @@ public class BattleManager : MonoBehaviour
                 AddTurnResultMessage($"{caster.characterName} 普通攻击回复10%内力");
                 dealtDamage = true;
                 break;
+            case 700:   // 青龙：龙爪裂甲（系数120%，减目标20%防御力，持续3回合，近战攻击）
+                yield return StartCoroutine(PerformAttack(caster, target, 1.2f, false));
+                dealtDamage = true;
+                target.AddOrRefreshAttributeDebuff("防御", 0.2f, 3);
+                AddTurnResultMessage($"龙爪裂甲使 {target.characterName} 防御力降低20%，持续3回合");
+                break;
+            case 701:   // 白虎：虎啸震林（系数150%，远程攻击）
+                yield return StartCoroutine(ApplyAttackToTarget(caster, target, 1.5f, false, skill.skillID));
+                dealtDamage = true;
+                break;
+            case 702:   // 朱雀：雀羽焚天（系数120%，灼烧4回合，远程攻击）
+                yield return StartCoroutine(ApplyAttackToTarget(caster, target, 1.2f, false, skill.skillID));
+                dealtDamage = true;
+                target.ApplyBurn(4);
+                AddTurnResultMessage($"雀羽焚天使 {target.characterName} 灼烧4回合");
+                break;
+            case 703:   // 玄武：玄甲护体（自身护盾50%最大生命，持续4回合，不可叠加）
+                {
+                    dealtDamage = false;
+                    int shieldAmount = Mathf.RoundToInt(caster.MaxHP * 0.5f);
+                    caster.overHealShield = shieldAmount; // 覆盖而非叠加，实现"不可叠加"
+                    AddTurnResultMessage($"{caster.characterName} 获得玄甲护体，吸收 {shieldAmount} 点伤害，持续4回合");
+                    caster.xuanWuShieldRemainingTurns = 4;
+                    break;
+                }
             case 101:
                 yield return StartCoroutine(TwoStrikeAttack(caster, target));
                 dealtDamage = true;
@@ -1009,7 +1188,6 @@ public class BattleManager : MonoBehaviour
                     {
                         // 行动条推迟30%
                         target.currentActionValue -= ACTION_THRESHOLD * 0.3f;
-                        if (target.currentActionValue < 0) target.currentActionValue = 0;
                         AddTurnResultMessage($"{target.characterName} 行动条推迟30%");
 
                         // 减速10%：添加速度属性减益（持续2回合）
@@ -1056,25 +1234,25 @@ public class BattleManager : MonoBehaviour
                     float spacing = 160.0f;
                     float fixedX = 600.0f;
 
-                    for (int i = 1; i <= 4; i++)
+                    for (int i = 0; i < 4; i++)
                     {
                         // 加载预制体
-                        GameObject prefab = CharacterPrefabDB.GetEnemyPrefab(prefabPaths[i - 1]);
+                        GameObject prefab = CharacterPrefabDB.GetEnemyPrefab(prefabPaths[i]);
                         if (prefab == null)
                         {
-                            Debug.LogError($"虚影预制体 {prefabPaths[i - 1]} 未找到");
+                            Debug.LogError($"虚影预制体 {prefabPaths[i]} 未找到");
                             continue;
                         }
 
                         // 计算位置（参考 SpawnEnemies）
-                        float posX = fixedX;
+                        float posX = fixedX + 150;
                         float posY;
-                        if (i != 0) posX = fixedX + 150;
-                        switch (i % 2)
+                        int displayIndex = i + 1;
+                        switch (displayIndex % 2)
                         {
-                            case 0: posY = centerY - i / 2 * spacing; break;
-                            case 1: posY = centerY + (i + 1) / 2 * spacing; break;
-                            default: posY = centerY - i / 2 * spacing; break;
+                            case 0: posY = centerY - displayIndex / 2 * spacing; break;
+                            case 1: posY = centerY + (displayIndex + 1) / 2 * spacing; break;
+                            default: posY = centerY - displayIndex / 2 * spacing; break;
                         }
                         Vector3 spawnPos = new Vector3(posX, posY, caster.visualTransform.position.z);
 
@@ -1089,7 +1267,7 @@ public class BattleManager : MonoBehaviour
                         }
 
                         // 设置虚影基础属性
-                        shadow.characterName = shadowNames[i - 1];
+                        shadow.characterName = shadowNames[i];
                         shadow.faction = "";
                         shadow.isEliteOrBoss = false;
                         shadow.summoner = caster;
@@ -1137,7 +1315,7 @@ public class BattleManager : MonoBehaviour
                         // 收集到列表
                         createdShadows.Add(shadow);
 
-                        AddTurnResultMessage($"{caster.characterName} 召唤了 {shadowNames[i - 1]}");
+                        AddTurnResultMessage($"{caster.characterName} 召唤了 {shadowNames[i]}");
                     }
 
                     // ★ 所有虚影添加完毕后，统一初始化光环（此时 enemyParty 已包含所有虚影）
@@ -1479,6 +1657,33 @@ public class BattleManager : MonoBehaviour
         if (finalReduction > 0f)
             finalDamage = Mathf.RoundToInt(finalDamage * (1 - finalReduction));
 
+        // ★ 玄武镇岳阵分摊：四神兽受到伤害时，50%由玄武承担（玄武自身不受分摊）
+        bool isPlayerAttacking = playerParty.Contains(attacker);
+        if (isPlayerAttacking && FourSymbolAura.HasTurtleAura(this) &&
+            defender.characterName != "玄武" &&
+            (defender.characterName == "青龙" || defender.characterName == "白虎" || defender.characterName == "朱雀"))
+        {
+            Character xuanwu = null;
+            foreach (var e in enemyParty)
+            {
+                if (e.characterName == "玄武" && !e.IsDead())
+                {
+                    xuanwu = e;
+                    break;
+                }
+            }
+            if (xuanwu != null)
+            {
+                int sharedDamage = Mathf.RoundToInt(finalDamage * 0.5f);
+                int actualDamage = finalDamage - sharedDamage;
+                // 玄武承担部分
+                xuanwu.TakeDamage(sharedDamage, isCrit);
+                AddTurnResultMessage($"玄武镇岳阵分摊 {sharedDamage} 点伤害");
+                // 目标实际只受一半伤害
+                finalDamage = actualDamage;
+            }
+        }
+
         defender.TakeDamage(finalDamage, isCrit);
         AddDamageToCurrentTurn(finalDamage);
         attacker.lastDamageDealt = finalDamage;
@@ -1540,6 +1745,32 @@ public class BattleManager : MonoBehaviour
 
         if (defender.IsDead())
         {
+            // ★ 四象灵尊阵亡惩罚：其余存活神兽速度提升25%（可叠加最多3层，加算）
+            if (defender.characterName == "青龙" || defender.characterName == "白虎" ||
+                defender.characterName == "朱雀" || defender.characterName == "玄武")
+            {
+                int aliveSymbolCount = 0;
+                foreach (var e in enemyParty)
+                {
+                    if (e != defender && !e.IsDead() &&
+                        (e.characterName == "青龙" || e.characterName == "白虎" ||
+                         e.characterName == "朱雀" || e.characterName == "玄武"))
+                    {
+                        aliveSymbolCount++;
+                        // 加算：每层+25%，上限75%（3层）
+                        e.deathPenaltySpeedBonus = Mathf.Min(e.deathPenaltySpeedBonus + 0.25f, 0.75f);
+                    }
+                }
+                if (aliveSymbolCount > 0)
+                {
+                    AddTurnResultMessage($"{defender.characterName} 阵亡，其余神兽速度提升25%（当前层数：{enemyParty.FirstOrDefault(e => !e.IsDead() && (e.characterName == "青龙" || e.characterName == "白虎" || e.characterName == "朱雀" || e.characterName == "玄武"))?.deathPenaltySpeedBonus * 100 ?? 0:F0}%）");
+                    // 移除四神兽光环
+                    FourSymbolAura aura = defender.GetComponent<FourSymbolAura>();
+                    if (aura != null)
+                        Destroy(aura);
+                }
+            }
+
             foreach (var art in attacker.equippedArtifacts)
             {
                 if (art != null && art.artifactEffect == ArtifactEffect.LingFengPei)
@@ -1628,6 +1859,46 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // ★ 四象灵尊光环与被动效果
+        // 1. 朱雀焚野阵：全体友方攻击时附带灼烧（朱雀存活时）
+        if (!isPlayer && FourSymbolAura.HasBirdAura(this))
+        {
+            defender.ApplyBurn(2);
+            AddTurnResultMessage($"焚野阵触发，{defender.characterName} 受到灼烧效果");
+        }
+
+        // 2. 青龙御风阵：全体友方攻击时减少目标10%行动条（青龙存活时）
+        if (!isPlayer && FourSymbolAura.HasDragonAura(this))
+        {
+            float pushAmount = ACTION_THRESHOLD * 0.1f;
+            defender.currentActionValue -= pushAmount;
+            AddTurnResultMessage($"御风阵触发，{defender.characterName} 行动条减少10%");
+        }
+
+        // 3. 青龙被动（龙之逆鳞）：攻击时减少目标10%行动条
+        if (!isPlayer && attacker.characterName == "青龙")
+        {
+            float pushAmount = ACTION_THRESHOLD * 0.1f;
+            defender.currentActionValue -= pushAmount;
+            AddTurnResultMessage($"龙之逆鳞触发，{defender.characterName} 行动条减少10%");
+        }
+
+        // 4. 白虎被动（虎煞噬魂）：暴击时额外造成目标最大生命值15%的真实伤害
+        if (!isPlayer && attacker.characterName == "白虎" && isCrit)
+        {
+            int trueDamage = Mathf.RoundToInt(defender.MaxHP * 0.15f);
+            defender.TakeDamage(trueDamage, false);
+            AddDamageToCurrentTurn(trueDamage);
+            AddTurnResultMessage($"虎煞噬魂触发，造成 {trueDamage} 点真实伤害");
+        }
+
+        // 6. 青龙被动：龙之逆鳞 — 每3次主动攻击后追加一次普通攻击，并填充30%行动条
+        // （计数在 EnemyTurn 的 qingLongConsecutiveAttacks 中处理，这里只标记触发）
+        if (!isPlayer && attacker.characterName == "青龙")
+        {
+            attacker.qingLongConsecutiveAttacks++;
+        }
+
         // ★ 晕击判定（所有门派，仅对非控制类技能生效，避免与控制技能重复）
         bool isControlSkill = (skillID == 102 || skillID == 202 || skillID == 302); // 威震山河、袖里乾坤、禅心入梦
         if (!isControlSkill)
@@ -1638,7 +1909,7 @@ public class BattleManager : MonoBehaviour
                 if (defender.immuneToControl)
                 {
                     float pushAmount = ACTION_THRESHOLD * defender.controlToPushMultiplier * 1; // 眩晕持续1回合
-                    defender.currentActionValue = Mathf.Max(0, defender.currentActionValue - pushAmount);
+                    defender.currentActionValue -= pushAmount;
                     AddTurnResultMessage($"{attacker.characterName} 晕击触发，{defender.characterName} 免疫眩晕，行动条推迟{pushAmount}");
                 }
                 else
@@ -1716,6 +1987,30 @@ public class BattleManager : MonoBehaviour
 
         int counterDamage = Mathf.RoundToInt(counter.GetFinalATK() * counterDamageMult);
         // 固定伤害，不再额外计算防御减免（但目标减伤效果仍会生效）
+
+        // ★ 玄武镇岳阵分摊：反击时，四神兽受到伤害50%由玄武承担（玄武自身不受分摊）
+        if (target.characterName != "玄武" &&
+            (target.characterName == "青龙" || target.characterName == "白虎" || target.characterName == "朱雀"))
+        {
+            Character xuanwu = null;
+            foreach (var e in enemyParty)
+            {
+                if (e.characterName == "玄武" && !e.IsDead())
+                {
+                    xuanwu = e;
+                    break;
+                }
+            }
+            if (xuanwu != null && FourSymbolAura.HasTurtleAura(this))
+            {
+                int sharedDamage = Mathf.RoundToInt(counterDamage * 0.5f);
+                int actualDamage = counterDamage - sharedDamage;
+                xuanwu.TakeDamage(sharedDamage, false);
+                AddTurnResultMessage($"玄武镇岳阵分摊 {sharedDamage} 点反击伤害");
+                counterDamage = actualDamage;
+            }
+        }
+
         target.TakeDamage(counterDamage, false);
         PlayIconHitAnimation(target);
         AddTurnResultMessage($"{counter.characterName} 反击造成 {counterDamage} 伤害");
@@ -1779,25 +2074,26 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    void OnDefend()
+    public void OnDefend()
     {
-        if (currentState != BattleState.PlayerTurn) return;
-        if (hasUsedMainActionThisTurn)
-        {
-            Debug.Log("本回合已使用主行动，无法防御");
-            return;
-        }
-        currentActor.isDefending = true;
         currentActor.defenseReduction = 0.5f;
         currentActor.counterChance = 0f;
         currentActor.defenseRemaining = 1;
         currentActor.isImmobilizeDefense = false;
         AddTurnResultMessage($"{currentActor.characterName} 进入防御状态");
         hasUsedMainActionThisTurn = true;
-        EndPlayerTurn();
+
+        // ★ 先执行回合结束清理
+        EndPlayerTurnCleanup();
+        // ★ 先扣行动值
+        currentActor.SpendAction();
+        // ★ 再检查风雷翼
+        TryTriggerFengLeiYi(currentActor);
+        currentState = BattleState.Idle;
+        UpdateUI();
     }
 
-    void OnFlee()
+    public void OnFlee()
     {
         if (currentState != BattleState.PlayerTurn) return;
         if (hasUsedMainActionThisTurn)
@@ -1821,11 +2117,14 @@ public class BattleManager : MonoBehaviour
         {
             AddTurnResultMessage($"{currentActor.characterName} 逃跑失败");
             hasUsedMainActionThisTurn = true;
+
+            // ★ 先执行回合结束清理
+            EndPlayerTurnCleanup();
+            // ★ 先扣行动值
+            currentActor.SpendAction();
+            // ★ 再检查风雷翼
             TryTriggerFengLeiYi(currentActor);
-            if (!currentActor.fengLeiYiTriggeredThisTurn)
-                EndPlayerTurn();
-            else
-                currentState = BattleState.Idle;
+            currentState = BattleState.Idle;
         }
         UpdateUI();
     }
@@ -1836,12 +2135,25 @@ public class BattleManager : MonoBehaviour
         if (character.HasArtifactEffect(ArtifactEffect.FengLeiYi) && Random.value < 0.1f)
         {
             character.fengLeiYiTriggeredThisTurn = true;
+            // 风雷翼：额外获得一次行动，直接填充行动条（不经过 SpendAction 扣除）
             character.currentActionValue = ACTION_THRESHOLD;
             AddTurnResultMessage($"{character.characterName} 触发风雷翼，获得额外行动！");
         }
     }
 
     void EndPlayerTurn()
+    {
+        EndPlayerTurnCleanup();
+        currentActor.SpendAction();
+        hasTriggeredGuaranteedComboThisTurn = false;
+        currentState = BattleState.Idle;
+    }
+
+    /// <summary>
+    /// 玩家回合结束的清理工作（不包含 SpendAction 和状态切换），
+    /// 风雷翼触发时也需要调用。
+    /// </summary>
+    void EndPlayerTurnCleanup()
     {
         if (skillTooltipText != null)
             skillTooltipText.gameObject.SetActive(false);
@@ -1855,11 +2167,7 @@ public class BattleManager : MonoBehaviour
         skillButtons.Clear();
 
         SetIconScale(currentActor, 1f);
-        currentActor.SpendAction();
         hasTriggeredGuaranteedComboThisTurn = false;
-        currentState = BattleState.Idle;
-
-        UpdateUI();
     }
 
     IEnumerator EnemyTurn()
@@ -1962,6 +2270,17 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // ★ 四象灵尊AI
+        if (currentActor.characterName == "青龙" || currentActor.characterName == "白虎" ||
+            currentActor.characterName == "朱雀" || currentActor.characterName == "玄武")
+        {
+            // 优先使用专属技能（skillID 700-703），其次普通攻击
+            var specialSkill = currentActor.skills.FirstOrDefault(
+                s => s.skillID >= 700 && s.skillID <= 703 && s.currentCooldown == 0 && currentActor.currentMP >= s.mpCost);
+            if (specialSkill != null)
+                selectedSkill = specialSkill;
+        }
+
         if (selectedSkill != null)
         {
             // 处理蓄力技能（万仙来朝和混元一气需要蓄力）
@@ -2033,6 +2352,43 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // ★ 四象联动：任意神兽行动时，其余三只获得10%行动条
+        if (currentActor.characterName == "青龙" || currentActor.characterName == "白虎" ||
+            currentActor.characterName == "朱雀" || currentActor.characterName == "玄武")
+        {
+            float pushAmount = ACTION_THRESHOLD * 0.1f;
+            foreach (var other in enemyParty)
+            {
+                if (other != currentActor && !other.IsDead() &&
+                    (other.characterName == "青龙" || other.characterName == "白虎" ||
+                     other.characterName == "朱雀" || other.characterName == "玄武"))
+                {
+                    other.currentActionValue = Mathf.Min(other.currentActionValue + pushAmount, MAX_PREDICT_ACTION_THRESHOLD);
+                }
+            }
+        }
+
+        // ★ 青龙被动（龙之逆鳞）：攻击后自身行动条额外增加10%
+        if (currentActor.characterName == "青龙")
+        {
+            float pushAmount = ACTION_THRESHOLD * 0.1f;
+            currentActor.currentActionValue = Mathf.Min(currentActor.currentActionValue + pushAmount, MAX_PREDICT_ACTION_THRESHOLD);
+            AddTurnResultMessage($"青龙之逆鳞触发，自身行动条增加10%");
+        }
+
+        // ★ 青龙被动：每3次主动攻击追加一次普通攻击，填充30%行动条
+        if (currentActor.characterName == "青龙" && currentActor.qingLongConsecutiveAttacks >= 3)
+        {
+            currentActor.qingLongConsecutiveAttacks = 0;
+            AddTurnResultMessage($"青龙触发追加攻击！");
+            yield return StartCoroutine(PerformAttack(currentActor, finalTarget, 1.0f, false));
+            float extraPush = ACTION_THRESHOLD * 0.3f;
+            currentActor.currentActionValue = Mathf.Min(currentActor.currentActionValue + extraPush, MAX_PREDICT_ACTION_THRESHOLD);
+            AddTurnResultMessage($"青龙行动条额外填充30%");
+        }
+
+        // ★ 朱雀被动（朱雀涅槃）：每回合结束时检查——已通过重生标记实现
+
         if (currentTurnDamage > 0)
             ShowTurnDamage(currentActor, currentTurnDamage);
 
@@ -2060,7 +2416,7 @@ public class BattleManager : MonoBehaviour
         return 3;
     }
 
-    bool CheckBattleEnd()
+    public bool CheckBattleEnd()
     {
         if (playerParty.All(p => p.IsDead()))
         {
@@ -2071,11 +2427,15 @@ public class BattleManager : MonoBehaviour
             DisableAllButtons();
             AddTurnResultMessage("战斗失败...");
             foreach (var c in allCharacters) SetIconScale(c, 1f);
+            FourSymbolAura.ClearAuras(this);
             if (!isLoadingScene) StartCoroutine(ReturnToDemonTowerAfterDelay(2f));
             return true;
         }
         else if (enemyParty.All(e => e.IsDead()))
         {
+            // 清理四神兽光环
+            FourSymbolAura.ClearAuras(this);
+
             battleActive = false;
             battleResultText.text = "战斗胜利！";
             battleResultText.gameObject.SetActive(true);
@@ -2242,9 +2602,17 @@ public class BattleManager : MonoBehaviour
         EndPlayerTurn();
     }
 
-    private void SetIconScale(Character character, float scale)
+    public void SetIconScale(Character character, float scale)
     {
         if (character == null) return;
+
+        // UIManager 模式下委托给 uiManager
+        if (uiManager != null)
+        {
+            uiManager.SetIconScale(character, scale);
+            return;
+        }
+
         if (characterIconMap.TryGetValue(character, out GameObject icon))
         {
             icon.transform.localScale = Vector3.one * scale;
@@ -2254,6 +2622,11 @@ public class BattleManager : MonoBehaviour
     private void PlayIconHitAnimation(Character character)
     {
         if (character == null || character.IsDead()) return;
+
+        // UIManager 模式下也委托给 uiManager（uiManager 的 icon 有 CharacterQueueIcon 组件）
+        if (uiManager != null)
+            return;
+
         if (characterIconMap.TryGetValue(character, out GameObject icon))
         {
             StartCoroutine(IconShakeCoroutine(icon));
@@ -2300,7 +2673,7 @@ public class BattleManager : MonoBehaviour
             currentTurnDamage += damage;
     }
 
-    private void ShowTurnDamage(Character actor, int totalDamage)
+    public void ShowTurnDamage(Character actor, int totalDamage)
     {
         if (turnTotalDamageText == null) return;
 
@@ -2343,6 +2716,38 @@ public class BattleManager : MonoBehaviour
             Destroy(unit.gameObject);
         }
         AddTurnResultMessage($"{summoner.characterName} 清除了所有召唤物");
+    }
+
+    /// <summary>
+    /// 四象灵尊阵亡惩罚：移除光环，其余存活神兽速度提升25%（可叠加最多3层）
+    /// 由 Character.cs 在白虎无敌到期死亡时调用
+    /// </summary>
+    public void OnFourSymbolDeath(Character deadSymbol)
+    {
+        if (deadSymbol.characterName != "青龙" && deadSymbol.characterName != "白虎" &&
+            deadSymbol.characterName != "朱雀" && deadSymbol.characterName != "玄武")
+            return;
+
+        int aliveSymbolCount = 0;
+        foreach (var e in enemyParty)
+        {
+            if (e != deadSymbol && !e.IsDead() &&
+                (e.characterName == "青龙" || e.characterName == "白虎" ||
+                 e.characterName == "朱雀" || e.characterName == "玄武"))
+            {
+                aliveSymbolCount++;
+                // 加算：每层+25%，上限75%（3层）
+                e.deathPenaltySpeedBonus = Mathf.Min(e.deathPenaltySpeedBonus + 0.25f, 0.75f);
+            }
+        }
+        if (aliveSymbolCount > 0)
+        {
+            AddTurnResultMessage($"{deadSymbol.characterName} 阵亡，其余神兽速度提升25%（当前层数：{enemyParty.FirstOrDefault(e => !e.IsDead() && (e.characterName == "青龙" || e.characterName == "白虎" || e.characterName == "朱雀" || e.characterName == "玄武"))?.deathPenaltySpeedBonus * 100 ?? 0:F0}%）");
+            // 移除四神兽光环
+            FourSymbolAura aura = deadSymbol.GetComponent<FourSymbolAura>();
+            if (aura != null)
+                Destroy(aura);
+        }
     }
 
     private void GrantTongTianReward()

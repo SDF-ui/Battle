@@ -2,11 +2,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
+/// <summary>
+/// 玩家控制器 - 已重构，使用 EnemyConfigDatabase 数据驱动敌人配置
+/// </summary>
 public class PlayerController : MonoBehaviour
 {
     public Joystick joystick;
     public float moveSpeed = 5f;
     public Animator animator;
+
+    [Header("敌人配置数据库")]
+    public EnemyConfigDatabase enemyDatabase;
 
     private Rigidbody2D rb;
     private Vector2 lastInput;
@@ -19,6 +25,9 @@ public class PlayerController : MonoBehaviour
         if (animator == null) animator = GetComponent<Animator>();
         lastInput = Vector2.zero;
         lastDirection = Vector2.down;
+
+        if (enemyDatabase == null)
+            Debug.LogWarning("EnemyConfigDatabase 未赋值，将使用默认硬编码逻辑");
     }
 
     void FixedUpdate()
@@ -50,14 +59,151 @@ public class PlayerController : MonoBehaviour
         lastInput = moveInput;
     }
 
-    /// <summary>
-    /// 根据当前楼层生成敌人配置（心魔或普通怪物）
-    /// </summary>
     private void GenerateEnemyConfigs()
     {
         int currentFloor = GameData.currentFloor;
 
-        // ★ 第30层：最终Boss通天教主
+        // 如果配置了数据库，优先使用数据驱动方式
+        if (enemyDatabase != null)
+        {
+            GenerateEnemiesFromDatabase(currentFloor);
+            return;
+        }
+
+        // 后备：使用原来的硬编码逻辑（兼容旧版本）
+        GenerateEnemiesLegacy(currentFloor);
+    }
+
+    /// <summary>
+    /// 使用 EnemyConfigDatabase 数据驱动方式生成敌人
+    /// </summary>
+    private void GenerateEnemiesFromDatabase(int currentFloor)
+    {
+        var bossCfg = enemyDatabase.bossConfig;
+        var heartCfg = enemyDatabase.heartDemonConfig;
+
+        // Boss层
+        if (bossCfg != null && currentFloor % bossCfg.bossFloorInterval == 0)
+        {
+            BattleData.enemyConfigs = new List<CharacterConfig>
+            {
+                new CharacterConfig
+                {
+                    characterName = bossCfg.bossName,
+                    faction = "",
+                    level = bossCfg.bossLevel,
+                    allocatedCON = bossCfg.allocatedCON,
+                    allocatedINT = bossCfg.allocatedINT,
+                    allocatedSTR = bossCfg.allocatedSTR,
+                    allocatedAGI = bossCfg.allocatedAGI,
+                    equippedEquipments = new List<Item>(),
+                    equippedArtifacts = new List<Item>(),
+                    prefabPath = bossCfg.prefabPath,
+                    isEliteOrBoss = true
+                }
+            };
+            return;
+        }
+
+        // 心魔层
+        if (heartCfg != null && currentFloor % heartCfg.heartDemonFloorInterval == 0)
+        {
+            float multiplier = heartCfg.baseMultiplier + currentFloor * heartCfg.multiplierPerFloor;
+            BattleData.enemyConfigs = new List<CharacterConfig>
+            {
+                CreateHeartDemonConfig(multiplier)
+            };
+            return;
+        }
+
+        // 特殊楼层（如四神兽）
+        var specialCfg = enemyDatabase.GetSpecialFloorConfig(currentFloor);
+        if (specialCfg != null)
+        {
+            BattleData.enemyConfigs = CreateSpecialEnemyConfigs(specialCfg, currentFloor);
+            return;
+        }
+
+        // 普通楼层
+        int baseMin = 1 + Mathf.FloorToInt(currentFloor / 10);
+        int baseMax = 5;
+        baseMin = Mathf.Min(baseMin, baseMax);
+        int enemyCount = Random.Range(baseMin, baseMax + 1);
+        BattleData.enemyConfigs = CreateNormalEnemyConfigs(currentFloor, enemyCount);
+    }
+
+    private CharacterConfig CreateHeartDemonConfig(float multiplier)
+    {
+        List<Item> copiedEquipments = CloneAndScaleItems(GameData.equippedItems, multiplier);
+        List<Item> copiedArtifacts = CloneAndScaleItems(GameData.artifactSlots, multiplier);
+
+        return new CharacterConfig
+        {
+            characterName = enemyDatabase?.heartDemonConfig?.demonName ?? "心魔",
+            faction = GameData.playerFaction,
+            level = GameData.playerLevel,
+            allocatedCON = Mathf.RoundToInt(GameData.playerAllocatedCON * multiplier),
+            allocatedINT = Mathf.RoundToInt(GameData.playerAllocatedINT * multiplier),
+            allocatedSTR = Mathf.RoundToInt(GameData.playerAllocatedSTR * multiplier),
+            allocatedAGI = Mathf.RoundToInt(GameData.playerAllocatedAGI * multiplier),
+            extraCON = Mathf.RoundToInt(GameData.playerExtraCON * multiplier),
+            extraINT = Mathf.RoundToInt(GameData.playerExtraINT * multiplier),
+            extraSTR = Mathf.RoundToInt(GameData.playerExtraSTR * multiplier),
+            extraAGI = Mathf.RoundToInt(GameData.playerExtraAGI * multiplier),
+            equippedEquipments = copiedEquipments,
+            equippedArtifacts = copiedArtifacts,
+            prefabPath = enemyDatabase?.heartDemonConfig?.prefabPath ?? "Player",
+            isEliteOrBoss = true
+        };
+    }
+
+    private List<CharacterConfig> CreateSpecialEnemyConfigs(SpecialFloorConfig specialCfg, int currentFloor)
+    {
+        var configs = new List<CharacterConfig>();
+        int enemyLevel = Mathf.RoundToInt(5 + currentFloor * 2.0f);
+
+        foreach (var entry in specialCfg.enemies)
+        {
+            configs.Add(new CharacterConfig
+            {
+                characterName = entry.enemyName,
+                faction = "",
+                level = enemyLevel,
+                prefabPath = entry.prefabPath,
+                equippedEquipments = new List<Item>(),
+                equippedArtifacts = new List<Item>(),
+                isEliteOrBoss = specialCfg.isEliteOrBoss
+            });
+        }
+        return configs;
+    }
+
+    private List<CharacterConfig> CreateNormalEnemyConfigs(int currentFloor, int enemyCount)
+    {
+        var configs = new List<CharacterConfig>();
+        for (int i = 0; i < enemyCount; i++)
+        {
+            int enemyLevel = Mathf.RoundToInt(5 + currentFloor * 2.0f);
+            var template = enemyDatabase?.GetNormalEnemyTemplate(currentFloor, i);
+
+            configs.Add(new CharacterConfig
+            {
+                characterName = template?.enemyName ?? "剑魂",
+                faction = template?.faction ?? "",
+                level = enemyLevel,
+                prefabPath = template?.prefabPath ?? "SwordSoul",
+                equippedEquipments = new List<Item>(),
+                equippedArtifacts = new List<Item>()
+            });
+        }
+        return configs;
+    }
+
+    /// <summary>
+    /// 兼容旧版的硬编码敌人生成逻辑（后备方案）
+    /// </summary>
+    private void GenerateEnemiesLegacy(int currentFloor)
+    {
         if (currentFloor % 30 == 0)
         {
             Debug.Log($"当前第 {currentFloor} 层，生成最终Boss：通天教主");
@@ -113,8 +259,30 @@ public class PlayerController : MonoBehaviour
         }
         else if (currentFloor % 10 == 9)
         {
-            // 第9层（或其他以9结尾的层）为精英层，4个敌人（示例：四神兽）
+            // 第9层（或其他以9结尾的层）为精英层，4个敌人
             Debug.Log($"当前第 {currentFloor} 层，生成精英层（4个敌人）");
+            BattleData.enemyConfigs = new List<CharacterConfig>();
+            int enemyLevel = Mathf.RoundToInt(5 + currentFloor * 2.0f);
+            string[] names = { "剑魂", "石妖", "风刃豹", "林豹" };
+            string[] paths = { "SwordSoul", "StoneDemon", "LeopardDemon", "LinBao" };
+            for (int i = 0; i < 4; i++)
+            {
+                BattleData.enemyConfigs.Add(new CharacterConfig
+                {
+                    characterName = names[i],
+                    faction = "",
+                    level = enemyLevel,
+                    prefabPath = paths[i],
+                    equippedEquipments = new List<Item>(),
+                    equippedArtifacts = new List<Item>(),
+                    isEliteOrBoss = true
+                });
+            }
+        }
+        else if (currentFloor % 10 == 6)
+        {
+            // 第6层（6, 16, 26...）为四象灵尊（截教神兽组合）
+            Debug.Log($"当前第 {currentFloor} 层，生成四象灵尊（四神兽）");
             BattleData.enemyConfigs = new List<CharacterConfig>();
             int enemyLevel = Mathf.RoundToInt(5 + currentFloor * 2.0f);
             string[] names = { "青龙", "白虎", "朱雀", "玄武" };
@@ -130,27 +298,6 @@ public class PlayerController : MonoBehaviour
                     equippedEquipments = new List<Item>(),
                     equippedArtifacts = new List<Item>(),
                     isEliteOrBoss = true
-                });
-            }
-        }
-        else if (currentFloor % 10 == 8)
-        {
-            // 第8层：四神兽（与第9层类似，但可区分）
-            Debug.Log($"当前第 {currentFloor} 层，生成四神兽");
-            BattleData.enemyConfigs = new List<CharacterConfig>();
-            int enemyLevel = Mathf.RoundToInt(5 + currentFloor * 2.0f);
-            string[] names = { "青龙", "白虎", "朱雀", "玄武" };
-            string[] paths = { "Dragon", "Tiger", "Bird", "Tortise" };
-            for (int i = 0; i < 4; i++)
-            {
-                BattleData.enemyConfigs.Add(new CharacterConfig
-                {
-                    characterName = names[i],
-                    faction = "",
-                    level = enemyLevel,
-                    prefabPath = paths[i],
-                    equippedEquipments = new List<Item>(),
-                    equippedArtifacts = new List<Item>()
                 });
             }
         }
