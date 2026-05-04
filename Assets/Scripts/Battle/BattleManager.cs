@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -1630,6 +1630,13 @@ public class BattleManager : MonoBehaviour
 
         finalDamage = Mathf.RoundToInt(finalDamage * (1f + attacker.lianFengDamageBonus));
 
+        // ★ 妙法承佑：最终伤害加成（每层+20%，上限60%，独立乘算，不参与攻击力计算）
+        float miaoFaDamageBonus = attacker.faction == "FangCunShan" ? attacker.nextAttackDamageBonusStacks * 0.20f : 0f;
+        if (miaoFaDamageBonus > 0f)
+        {
+            finalDamage = Mathf.RoundToInt(finalDamage * (1f + miaoFaDamageBonus));
+        }
+
         if (attacker.faction == "WuZhuangGuan")
         {
             int debuffCount = defender.attributeDebuffs.Count;
@@ -2329,6 +2336,12 @@ public class BattleManager : MonoBehaviour
                 s => s.skillID >= 700 && s.skillID <= 703 && s.currentCooldown == 0 && currentActor.currentMP >= s.mpCost);
             if (specialSkill != null)
                 selectedSkill = specialSkill;
+        }
+
+        // ★ 错乱状态：无法使用主动技能，强制普攻
+        if (currentActor.isConfused)
+        {
+            selectedSkill = null;
         }
 
         if (selectedSkill != null)

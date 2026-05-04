@@ -255,7 +255,7 @@ public class Character : MonoBehaviour
     // ★ 本次暴击总伤害缓存（用于方寸山妙法承佑护盾计算，包含溅射伤害）
     public int currentCritTotalDamage = 0;
 
-    // ★ 方寸山妙法承佑：暴击后下次攻击伤害加成层数（每层+20%，上限3层，攻击后消耗一层）
+    // ★ 方寸山妙法承佑：暴击后下次攻击最终伤害加成层数（每层+20%，上限3层，攻击后消耗一层）
     public int nextAttackDamageBonusStacks = 0;
 
     public int MaxHP => cachedMaxHP;
@@ -351,10 +351,9 @@ public class Character : MonoBehaviour
             baiHuBonus = Mathf.Clamp01(1f - hpPercent);
         }
 
-        // ★ 妙法承佑：暴击后下次攻击伤害加成（每层+20%，上限60%）
-        float miaoFaBonus = faction == "FangCunShan" ? nextAttackDamageBonusStacks * 0.20f : 0f;
+        // ★ 妙法承佑已从攻击力加成改为最终伤害加成，在 BattleManager.ApplyAttackToTarget 中计算
 
-        float multiplier = 1f + tempAttackBonus + (shengShengAttackBonusActive ? shengShengAttackBonusValue : 0f) + shadowDeathAttackBonusValue + baiHuBonus + miaoFaBonus;
+        float multiplier = 1f + tempAttackBonus + (shengShengAttackBonusActive ? shengShengAttackBonusValue : 0f) + shadowDeathAttackBonusValue + baiHuBonus;
 
         // ★ 四象灵尊杀伐阵攻击力加成（白虎存活时，所有四神兽受益）
         if (!string.IsNullOrEmpty(characterName) &&
@@ -970,6 +969,11 @@ public class Character : MonoBehaviour
     public void TakeDamage(int damage, bool isCrit = false)
     {
         int totalDamage = damage;
+        // ★ 易伤修正：在护盾吸收前计算（提高后的伤害直接被护盾吸收）
+        if (damageTakenIncrease > 0)
+        {
+            totalDamage = Mathf.RoundToInt(totalDamage * (1 + damageTakenIncrease));
+        }
 
         // ★ 白虎虎煞噬魂：无敌状态下，所有受到的伤害归零
         if (isInvincible)
@@ -1012,10 +1016,6 @@ public class Character : MonoBehaviour
             jinGangSanShield -= absorb;
             totalDamage -= absorb;
             if (totalDamage <= 0) return;
-        }
-        if (damageTakenIncrease > 0)
-        {
-            totalDamage = Mathf.RoundToInt(totalDamage * (1 + damageTakenIncrease));
         }
         currentHP -= totalDamage;
         if (currentHP < 0) currentHP = 0;
@@ -1297,7 +1297,7 @@ public class Character : MonoBehaviour
         lianFengArmorPen = 0f;
         lianFengComboPenalty = 0f;
 
-        // ★ 每回合重置妙法承佑"下次攻击"标记（层数由 ConsumeNextAttackBonus 消耗，不在此重置）
+        // ★ 每回合重置妙法承佑"下次攻击"标记（层数由 ConsumeMiaoFaBonus 消耗，不在此重置）
     }
 
     public void ApplySpeedBuff(float multiplier, float duration)
@@ -1724,7 +1724,7 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 消耗妙法承佑一层伤害加成（与下次攻击加成消耗解耦，每次攻击命中都独立检查）
+    /// 消耗妙法承佑一层最终伤害加成（与下次攻击加成消耗解耦，每次攻击命中都独立检查）
     /// </summary>
     public void ConsumeMiaoFaBonus()
     {
@@ -1745,9 +1745,9 @@ public class Character : MonoBehaviour
             huiDengHitBonusRemaining = 2;
             battleManager.AddTurnResultMessage($"命中率提高15%，持续2回合");
 
-            // ★ 妙法承佑：暴击后使自身下一次攻击伤害提高20%（可叠加，上限60%）
+            // ★ 妙法承佑：暴击后使自身下一次攻击最终伤害提高20%（可叠加，上限60%）
             nextAttackDamageBonusStacks = Mathf.Min(nextAttackDamageBonusStacks + 1, 3);
-            battleManager.AddTurnResultMessage($"妙法承佑：攻击伤害提高{nextAttackDamageBonusStacks * 20}%（{nextAttackDamageBonusStacks}层，上限60%）");
+            battleManager.AddTurnResultMessage($"妙法承佑：最终伤害提高{nextAttackDamageBonusStacks * 20}%（{nextAttackDamageBonusStacks}层，上限60%）");
         }
         if (mingXinActive)
         {
@@ -2010,7 +2010,7 @@ public class Character : MonoBehaviour
                 string poWangStatus = hitRateDecreaseRemaining > 0 ? $"目标命中-{hitRateDecrease * 100:F0}% 剩余 {hitRateDecreaseRemaining} 回合" : "未激活";
                 sb.AppendLine($"  - 破妄之眼：免伤提升30%；受到攻击时，有80%概率使目标命中率降低10%，持续2回合（不可叠加）。{poWangStatus}");
                 sb.AppendLine($"  - 慧灯永续：每次触发暴击时，自身回复15%最大生命值，并提升15%命中率，持续2回合（不可叠加）。当前命中加成{huiDengHitBonus * 100:F0}%。");
-                sb.AppendLine($"  - 妙法承佑：暴击时忽视敌方20%防御，并为己方全体角色施加相当于此次伤害30%的护盾（含无相慧剑溅射伤害）；暴击后使自身下一次攻击伤害提高20%（可叠加，上限60%，触发后消耗一层）。当前层数：{nextAttackDamageBonusStacks}。");
+                sb.AppendLine($"  - 妙法承佑：暴击时忽视敌方20%防御，并为己方全体角色施加相当于此次伤害30%的护盾（含无相慧剑溅射伤害）；暴击后使自身下一次攻击最终伤害提高20%（可叠加，上限60%，触发后消耗一层）。当前层数：{nextAttackDamageBonusStacks}。");
                 break;
             default:
                 // 根据角色名字显示被动
