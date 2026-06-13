@@ -4,8 +4,8 @@ using UnityEngine.EventSystems;
 using System.Collections;
 
 /// <summary>
-/// 长按处理器 - 为 UI 按钮添加可复用的长按支持
-/// 替代在各个 UI 脚本中重复实现的长按协程逻辑
+/// Long press handler - adds reusable long-press support for UI buttons.
+/// Replaces duplicate long-press coroutine logic across UI scripts.
 /// </summary>
 public class LongPressHandler : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
 {

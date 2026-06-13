@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// 属性辅助工具类 - 统一处理装备/法宝属性的累加逻辑
-/// 消除 CharacterStatsCalculator 和 FantasyStatusPanel 中的重复 switch 代码
+/// Attribute helper utility - unified accumulation logic for equipment/artifact attributes.
+/// Eliminates duplicate switch code in CharacterStatsCalculator and FantasyStatusPanel.
 /// </summary>
 public static class AttributeHelper
 {
     /// <summary>
-    /// 累加一个物品属性到对应的累计变量中（用于装备）
+    /// Accumulate a single item attribute into the corresponding total variable (for equipment).
     /// </summary>
     public static void AddAttribute(
         ItemAttribute attr,
@@ -15,6 +15,7 @@ public static class AttributeHelper
         ref int hp, ref int mp, ref int atk, ref int def, ref int spd,
         ref int crit, ref int hit, ref int eva, ref int combo, ref int stun)
     {
+        if (attr == null) return;
         switch (attr.type)
         {
             case AttributeType.Constitution: con += attr.value; break;
@@ -35,7 +36,7 @@ public static class AttributeHelper
     }
 
     /// <summary>
-    /// 累加单个物品的所有属性（基础属性 + 额外属性）到累计变量中
+    /// Accumulate all attributes of a single item (basic + extra) into the total variables.
     /// </summary>
     public static void AddItemAttributes(
         Item item,
@@ -69,7 +70,7 @@ public static class AttributeHelper
     }
 
     /// <summary>
-    /// 累加物品列表中的所有属性
+    /// Accumulate all attributes from a list of items.
     /// </summary>
     public static void AddItemsAttributes(
         IEnumerable<Item> items,
@@ -89,7 +90,7 @@ public static class AttributeHelper
     }
 
     /// <summary>
-    /// 获取属性类型的中文名称
+    /// Get the Chinese display name for an attribute type.
     /// </summary>
     public static string GetAttributeDisplayName(AttributeType type)
     {
@@ -109,6 +110,31 @@ public static class AttributeHelper
             case AttributeType.StunRate: return "晕击率";
             case AttributeType.HitRate: return "命中率";
             case AttributeType.EvasionRate: return "闪避率";
+            default: return type.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Get the concise Chinese display name for an attribute type.
+    /// </summary>
+    public static string GetShortAttributeName(AttributeType type)
+    {
+        switch (type)
+        {
+            case AttributeType.Constitution: return "体";
+            case AttributeType.Spirit: return "灵";
+            case AttributeType.Strength: return "力";
+            case AttributeType.Agility: return "敏";
+            case AttributeType.Health: return "生命";
+            case AttributeType.Mana: return "内力";
+            case AttributeType.Attack: return "攻击";
+            case AttributeType.Defense: return "防御";
+            case AttributeType.Speed: return "速度";
+            case AttributeType.CritRate: return "暴击";
+            case AttributeType.ComboRate: return "连击";
+            case AttributeType.StunRate: return "晕击";
+            case AttributeType.HitRate: return "命中";
+            case AttributeType.EvasionRate: return "闪避";
             default: return type.ToString();
         }
     }

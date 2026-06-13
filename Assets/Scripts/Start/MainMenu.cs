@@ -12,8 +12,8 @@ public class MainMenu : MonoBehaviour
     public Button exitButton;
 
     [Header("Info Panel")]
-    public GameObject gameInfoPanel;          // 包含 Info Text 的父物体
-    public TMP_Text infoText;                 // Info Text 文本组件
+    public GameObject gameInfoPanel;          // Parent object containing the Info Text
+    public TMP_Text infoText;                 // Info Text component
 
     private enum InfoType { None, Help, About }
     private InfoType currentInfoType = InfoType.None;
@@ -23,7 +23,7 @@ public class MainMenu : MonoBehaviour
 
     void Start()
     {
-        // 初始化按钮监听
+        // Initialize button listeners
         if (startButton != null)
             startButton.onClick.AddListener(OnStart);
         if (helpButton != null)
@@ -33,53 +33,51 @@ public class MainMenu : MonoBehaviour
         if (exitButton != null)
             exitButton.onClick.AddListener(OnExit);
 
-        // 确保信息面板初始隐藏
+        // Ensure info panel is initially hidden
         if (gameInfoPanel != null)
             gameInfoPanel.SetActive(false);
     }
 
-    // 开始游戏
-    void OnStart()
+    // Start game
+    public void OnStart()
     {
-        SceneManager.LoadScene("Demon Tower");
+        SceneController.LoadDemonTower();
     }
 
-    // 帮助信息
-    void OnHelp()
+    // Help info
+    public void OnHelp()
     {
-        // 如果当前显示的是帮助信息，则关闭面板
+        // If help info is currently displayed, close the panel
         if (currentInfoType == InfoType.Help)
         {
             gameInfoPanel.SetActive(false);
             currentInfoType = InfoType.None;
+            return;
         }
-        else
-        {
-            // 否则显示帮助信息
-            infoText.text = helpMessage;
-            gameInfoPanel.SetActive(true);
-            currentInfoType = InfoType.Help;
-        }
+
+        // Otherwise show help info
+        gameInfoPanel.SetActive(true);
+        infoText.text = helpMessage;
+        currentInfoType = InfoType.Help;
     }
 
-    // 关于信息（版权）
-    void OnAbout()
+    // About info (copyright)
+    public void OnAbout()
     {
         if (currentInfoType == InfoType.About)
         {
             gameInfoPanel.SetActive(false);
             currentInfoType = InfoType.None;
+            return;
         }
-        else
-        {
-            infoText.text = aboutMessage;
-            gameInfoPanel.SetActive(true);
-            currentInfoType = InfoType.About;
-        }
+
+        gameInfoPanel.SetActive(true);
+        infoText.text = aboutMessage;
+        currentInfoType = InfoType.About;
     }
 
-    // 退出游戏
-    void OnExit()
+    // Exit game
+    public void OnExit()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

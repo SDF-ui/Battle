@@ -583,6 +583,17 @@ RectTransform:
   m_AnchoredPosition: {x: 360, y: 0}
   m_SizeDelta: {x: 100, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &192537490 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1024193232925625282, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
+  m_PrefabInstance: {fileID: 1381963609}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &220999978
 GameObject:
   m_ObjectHideFlags: 0
@@ -993,6 +1004,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 472308948}
   m_CullTransparentMesh: 1
+--- !u!114 &579155439 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6026062959142307328, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
+  m_PrefabInstance: {fileID: 1381963609}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &640621007
 GameObject:
   m_ObjectHideFlags: 0
@@ -1033,6 +1055,11 @@ RectTransform:
   m_AnchoredPosition: {x: -300, y: 0}
   m_SizeDelta: {x: 100, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!224 &680148185 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1881051034241197362, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
+  m_PrefabInstance: {fileID: 1381963609}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &729060604
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1166,10 +1193,15 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26cbaa4bc8f26ed418301d57ee6dcabe, type: 3}
---- !u!1 &729060605 stripped
+--- !u!1 &843255033 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 6967053213632712811, guid: 26cbaa4bc8f26ed418301d57ee6dcabe, type: 3}
-  m_PrefabInstance: {fileID: 729060604}
+  m_CorrespondingSourceObject: {fileID: 3640579341975550024, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
+  m_PrefabInstance: {fileID: 1381963609}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &856342394 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4246762186905662429, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
+  m_PrefabInstance: {fileID: 1381963609}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &869994491
 GameObject:
@@ -1245,6 +1277,11 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &910516048 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6967053213632712811, guid: 26cbaa4bc8f26ed418301d57ee6dcabe, type: 3}
+  m_PrefabInstance: {fileID: 729060604}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &921682797
 GameObject:
   m_ObjectHideFlags: 0
@@ -2228,43 +2265,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
---- !u!1 &1381963610 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3640579341975550024, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
-  m_PrefabInstance: {fileID: 1381963609}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1381963611 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1024193232925625282, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
-  m_PrefabInstance: {fileID: 1381963609}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1381963612 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6026062959142307328, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
-  m_PrefabInstance: {fileID: 1381963609}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!224 &1381963613 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4246762186905662429, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
-  m_PrefabInstance: {fileID: 1381963609}
-  m_PrefabAsset: {fileID: 0}
---- !u!224 &1381963614 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1881051034241197362, guid: 31ce6ff61e7d1084e961ca4ca1111d2d, type: 3}
-  m_PrefabInstance: {fileID: 1381963609}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1438871978
 GameObject:
   m_ObjectHideFlags: 0
@@ -2592,7 +2592,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1638768001}
-  - component: {fileID: 1638768000}
+  - component: {fileID: 1638768003}
   - component: {fileID: 1638768002}
   m_Layer: 0
   m_Name: Battle Manage
@@ -2601,50 +2601,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1638768000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1638767999}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8079d622849cc04db9291e79f7a2dbd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerParty: []
-  enemyParty: []
-  playerSpawnPoints:
-  - {fileID: 1018111741}
-  enemySpawnPoints:
-  - {fileID: 269888975}
-  - {fileID: 49142605}
-  - {fileID: 869994492}
-  - {fileID: 1663827899}
-  - {fileID: 1283264754}
-  enemySpawnCenter: {fileID: 0}
-  enemySpawnRadius: 3
-  useCircularSpawning: 1
-  fleeButton: {fileID: 1704591190}
-  defendButton: {fileID: 220999983}
-  cancelButton: {fileID: 921682799}
-  battleResultText: {fileID: 1713393664}
-  turnResultText: {fileID: 1802203174}
-  turnTotalDamageText: {fileID: 1061697263}
-  skillButtonContainer: {fileID: 1865009252}
-  skillButtonPrefab: {fileID: 8271941469801430104}
-  skillTooltipText: {fileID: 1290759401}
-  actionQueueContainer: {fileID: 1630080972}
-  characterIconPrefab: {fileID: 729060605}
-  fleeBaseChance: 0.3
-  infoButton: {fileID: 1135854361}
-  infoPanel: {fileID: 1381963610}
-  playerAvatarContainer: {fileID: 1381963614}
-  enemyAvatarContainer: {fileID: 1381963613}
-  detailText: {fileID: 1381963612}
-  exitButton: {fileID: 1381963611}
-  uiManager: {fileID: 1638768002}
 --- !u!4 &1638768001
 Transform:
   m_ObjectHideFlags: 0
@@ -2671,27 +2627,66 @@ MonoBehaviour:
   m_GameObject: {fileID: 1638767999}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8bd206e250ca720449f1e1a064d23aa8, type: 3}
+  m_Script: {fileID: 11500000, guid: 2c5b6bd7d1e4a45408a3bf75e7f0d202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   battleResultText: {fileID: 1713393664}
   turnResultText: {fileID: 1802203174}
   turnTotalDamageText: {fileID: 1061697263}
   skillButtonContainer: {fileID: 1865009252}
-  skillButtonPrefab: {fileID: 8271941469801430104}
+  skillButtonPrefab: {fileID: 1678289030}
   skillTooltipText: {fileID: 1290759401}
   actionQueueContainer: {fileID: 1630080972}
-  characterIconPrefab: {fileID: 729060605}
+  characterIconPrefab: {fileID: 910516048}
   maxQueueLength: 10
   fleeButton: {fileID: 1704591190}
   defendButton: {fileID: 220999983}
   cancelButton: {fileID: 921682799}
   infoButton: {fileID: 1135854361}
-  infoPanel: {fileID: 1381963610}
-  playerAvatarContainer: {fileID: 1381963614}
-  enemyAvatarContainer: {fileID: 1381963613}
-  detailText: {fileID: 1381963612}
-  exitButton: {fileID: 1381963611}
+  infoPanel: {fileID: 843255033}
+  playerAvatarContainer: {fileID: 680148185}
+  enemyAvatarContainer: {fileID: 856342394}
+  detailText: {fileID: 579155439}
+  exitButton: {fileID: 192537490}
+--- !u!114 &1638768003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1638767999}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c395f5bd963e002428e58f962c674a51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerParty: []
+  enemyParty: []
+  playerSpawnPoints:
+  - {fileID: 1018111741}
+  enemySpawnPoints: []
+  enemySpawnCenter: {fileID: 0}
+  enemySpawnRadius: 3
+  useCircularSpawning: 1
+  fleeButton: {fileID: 1704591190}
+  defendButton: {fileID: 220999983}
+  cancelButton: {fileID: 921682799}
+  battleResultText: {fileID: 1713393664}
+  turnResultText: {fileID: 1802203174}
+  turnTotalDamageText: {fileID: 1061697263}
+  skillButtonContainer: {fileID: 1865009252}
+  skillButtonPrefab: {fileID: 1678289030}
+  skillTooltipText: {fileID: 1290759401}
+  actionQueueContainer: {fileID: 1630080972}
+  characterIconPrefab: {fileID: 910516048}
+  fleeBaseChance: 0.3
+  infoButton: {fileID: 1135854361}
+  infoPanel: {fileID: 843255033}
+  playerAvatarContainer: {fileID: 680148185}
+  enemyAvatarContainer: {fileID: 856342394}
+  detailText: {fileID: 579155439}
+  exitButton: {fileID: 192537490}
+  uiManager: {fileID: 1638768002}
 --- !u!1 &1663827898
 GameObject:
   m_ObjectHideFlags: 0
@@ -2727,6 +2722,11 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -90}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1678289030 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6649104402437133816, guid: 7e3fb70fba9605a419237434b67125fa, type: 3}
+  m_PrefabInstance: {fileID: 6188671022624842006}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1704591186
 GameObject:
   m_ObjectHideFlags: 0
@@ -3507,11 +3507,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7e3fb70fba9605a419237434b67125fa, type: 3}
---- !u!1 &8271941469801430104 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6649104402437133816, guid: 7e3fb70fba9605a419237434b67125fa, type: 3}
-  m_PrefabInstance: {fileID: 6188671022624842006}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// 门派技能数据库 - 集中管理所有门派的技能描述和配置
-/// 消除 FactionSelectionUI 中硬编码的长字符串
+/// Faction Skill Database - centralized management of all faction skill descriptions and configurations.
+/// Eliminates the long hard-coded strings in FactionSelectionUI.
 /// </summary>
 public static class FactionSkillDatabase
 {
@@ -38,13 +38,13 @@ public static class FactionSkillDatabase
             feature = "擅长连击，通过连续攻击压制敌人，体现天兵神将的迅猛攻势；基础连击率提升20%。",
             activeSkills = new List<SkillInfo>
             {
-                new SkillInfo { name = "狮子搏兔", type = "物理攻击", mp = 30, cooldown = 2, description = "对目标连续攻击2次，每次造成100%攻击力的伤害；若两次攻击均命中，则下次攻击时连击概率提升10%（不可叠加，施加攻击后消耗）。" },
+                new SkillInfo { name = "狮子搏兔", type = "物理攻击", mp = 30, cooldown = 1, description = "对目标连续攻击2次，每次造成100%攻击力的伤害；若两次攻击均命中，则下次攻击时连击概率提升10%（不可叠加，施加攻击后消耗）。" },
                 new SkillInfo { name = "威震山河", type = "控制", mp = 20, cooldown = 2, description = "有80%概率使目标陷入错乱状态，无法区分敌我和施展技能，持续3回合；若效果命中，则自身下次攻击时连击概率提升10%（不可叠加，施加攻击后消耗）；此次攻击回复自身30%内力值。" }
             },
             assistSkills = new List<SkillInfo>
             {
-                new SkillInfo { name = "枕戈待旦", type = "增益", mp = 50, cooldown = 2, description = "本回合内，自身攻击附加30%连击率提升，此技能不占用回合行动值。" },
-                new SkillInfo { name = "不动如山", type = "防御", mp = 80, cooldown = 4, description = "回复自身30%气血，并进入列阵状态：免伤提升20%，为全体友方提升防御力，数值相当于自身防御力的 10%；在任意己方角色被敌方攻击时，自身有80%概率触发一次反击（造成相当于自身75%攻击力的固定伤害，不消耗行动值）；持续4回合。" }
+                new SkillInfo { name = "枕戈待旦", type = "增益", mp = 50, cooldown = 1, description = "本回合内，自身攻击附加30%连击率提升，此技能不占用回合行动值。" },
+                new SkillInfo { name = "不动如山", type = "防御", mp = 80, cooldown = 3, description = "回复自身30%气血，并进入列阵状态：免伤提升20%，为全体友方提升防御力，数值相当于自身防御力的 10%；在任意己方角色被敌方攻击时，自身有80%概率触发一次反击（造成相当于自身75%攻击力的固定伤害，不消耗行动值）；持续4回合。" }
             },
             passiveSkills = new List<SkillInfo>
             {
@@ -65,13 +65,13 @@ public static class FactionSkillDatabase
             feature = "擅长晕击，以乾坤之力震慑敌人，彰显地仙之祖的掌控之道；基础晕击率提升20%。",
             activeSkills = new List<SkillInfo>
             {
-                new SkillInfo { name = "雷霆一击", type = "物理攻击", mp = 30, cooldown = 2, description = "对目标造成180%攻击力的伤害；若目标已处于眩晕状态，则伤害提升30%（技能伤害系数提升至210%）并延长眩晕1回合。" },
+                new SkillInfo { name = "雷霆一击", type = "物理攻击", mp = 30, cooldown = 1, description = "对目标造成180%攻击力的伤害；若目标已处于眩晕状态，则伤害提升30%（技能伤害系数提升至210%）并延长眩晕1回合。" },
                 new SkillInfo { name = "袖里乾坤", type = "控制/回复", mp = 20, cooldown = 2, description = "有80%概率使目标陷入眩晕状态，无法行动，持续3回合；若效果命中，则自身下次攻击时晕击概率提升10%（不可叠加，施加攻击后消耗）；此次攻击回复自身30%内力值。" }
             },
             assistSkills = new List<SkillInfo>
             {
-                new SkillInfo { name = "引雷控电", type = "增益", mp = 50, cooldown = 2, description = "本回合内，自身攻击附加30%晕击率提升，此技能不占用回合行动值。" },
-                new SkillInfo { name = "五雷轰顶", type = "控制/推条", mp = 80, cooldown = 4, description = "对敌方全体造成120%攻击力的伤害，并有80%概率使其行动条减少30%。同时进入镇岳状态：晕击概率提高10%，且每次成功触发晕击时自身行动提前30%；持续4回合。" }
+                new SkillInfo { name = "引雷控电", type = "增益", mp = 50, cooldown = 1, description = "本回合内，自身攻击附加30%晕击率提升，此技能不占用回合行动值。" },
+                new SkillInfo { name = "五雷轰顶", type = "控制/推条", mp = 80, cooldown = 3, description = "对敌方全体造成120%攻击力的伤害，并有80%概率使其行动条减少30%。同时进入镇岳状态：晕击概率提高10%，且每次成功触发晕击时自身行动提前30%；持续4回合。" }
             },
             passiveSkills = new List<SkillInfo>
             {
@@ -92,13 +92,13 @@ public static class FactionSkillDatabase
             feature = "擅长暴击，以无上佛法一击制敌，体现菩提子的智慧与威能；基础暴击率提升10%，暴击伤害提升20%。",
             activeSkills = new List<SkillInfo>
             {
-                new SkillInfo { name = "无相慧剑", type = "物理攻击", mp = 30, cooldown = 2, description = "对敌方单体造成150%攻击力的伤害；若暴击率大于等于75%，则此次攻击必暴击，且对其他所有敌人造成60%的溅射伤害。" },
+                new SkillInfo { name = "无相慧剑", type = "物理攻击", mp = 30, cooldown = 1, description = "对敌方单体造成150%攻击力的伤害；若暴击率大于等于75%，则此次攻击必暴击，且对其他所有敌人造成60%的溅射伤害。" },
                 new SkillInfo { name = "禅心入梦", type = "控制", mp = 20, cooldown = 2, description = "对敌方单体施放，有80%概率使其陷入睡眠状态，无法行动，持续3回合（受到伤害会醒来）；若效果命中，则自身下次攻击时暴击概率提升10%（不可叠加，施加攻击后消耗）；此次攻击回复自身30%内力值。" }
             },
             assistSkills = new List<SkillInfo>
             {
-                new SkillInfo { name = "空明心境", type = "增益", mp = 50, cooldown = 2, description = "本回合内，自身攻击附加30%暴击率提升，此技能不占用回合行动值。" },
-                new SkillInfo { name = "明心见性", type = "驱散/增益", mp = 80, cooldown = 4, description = "驱散自身所有负面状态，并进入明心状态：暴击率提高10%，暴伤系数提高20%，且每次暴击时自身行动条增加20%；持续4回合。" }
+                new SkillInfo { name = "空明心境", type = "增益", mp = 50, cooldown = 1, description = "本回合内，自身攻击附加30%暴击率提升，此技能不占用回合行动值。" },
+                new SkillInfo { name = "明心见性", type = "驱散/增益", mp = 80, cooldown = 3, description = "驱散自身所有负面状态，并进入明心状态：暴击率提高10%，暴伤系数提高20%，且每次暴击时自身行动条增加20%；持续4回合。" }
             },
             passiveSkills = new List<SkillInfo>
             {
