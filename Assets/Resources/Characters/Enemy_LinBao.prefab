@@ -338,7 +338,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: f1406250270a38c4db8fcb90f5bf665c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9a509ac3c8217344bacc6ce26f6ef10a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1034,9 +1034,16 @@ MonoBehaviour:
   jinGangSanShield: 0
   fengLeiYiTriggeredThisTurn: 0
   isEliteOrBoss: 0
+  isCustomStats: 0
+  summoner: {fileID: 0}
+  damageReductionPercent: 0
+  reflectDamagePercent: 0
+  immuneToControl: 0
+  controlToPushMultiplier: 0
   tempComboBonus: 0
   tempStunBonus: 0
   tempCritRateBonus: 0
+  xianXianCritBonus: 0
   tempAttackBonus: 0
   tempDefBonus: 0
   tempHitBonus: 0
@@ -1052,8 +1059,11 @@ MonoBehaviour:
   lionComboBuffActive: 0
   lionComboBuffRemaining: 0
   lionComboBuffValue: 0.1
+  weiZhenBuffActive: 0
+  weiZhenBuffConsumed: 0
   lastAttackHit: 0
   lastDamageDealt: 0
+  lastMainDamageDealt: 0
   nextCritRateBonus: 0
   nextCritRateBonusRemaining: 0
   chanXinCritBonus: 0
@@ -1078,14 +1088,64 @@ MonoBehaviour:
   attributeDebuffs: []
   xunJieActive: 0
   xunJieRemaining: 0
+  xunJieSpeedBonus: 0.2
   huiDengHitBonus: 0
   huiDengHitBonusRemaining: 0
+  cachedMaxHP: 0
+  cachedMaxMP: 0
+  cachedATK: 0
+  cachedDEF: 0
+  cachedSPD: 0
+  cachedCritRate: 0
+  cachedHitRate: 0
+  cachedEvasionRate: 0
   cachedCritDamage: 1.5
+  cachedComboRate: 0
+  cachedStunRate: 0
   extraDEF: 0
   extraDEFRemaining: 0
+  isCharging: 0
+  currentChargeTurns: 0
+  chargedSkill:
+    skillName: 
+    type: 0
+    mpCost: 0
+    cooldown: 0
+    currentCooldown: 0
+    isFreeAction: 0
+    skillID: 0
+    description: 
+  currentPhase: 1
+  maxPhase: 1
+  phaseMaxHPs: []
+  phaseMaxMPs: []
+  phaseAttack: []
+  phaseDefense: []
+  phaseSpeed: []
+  zhuXianShieldRemainingTurns: 0
+  xuanWuShieldRemainingTurns: 0
+  shadowDeathAttackBonusStacks: 0
+  shadowDeathAttackBonusValue: 0
+  consecutiveAttackCount: 0
+  hasUsedPhoenixRebirth: 0
+  baiHuLostHpAttackBonus: 0
+  isInvincible: 0
+  invincibleRemaining: 0
+  hasUsedInvincibleRevive: 0
+  isPhoenixInvincible: 0
+  phoenixInvincibleRemaining: 0
+  qingLongConsecutiveAttacks: 0
+  xuanWuLowHpHealUsed: 0
+  deathPenaltySpeedBonus: 0
+  nextAttackBonusConsumed: 0
+  currentCritTotalDamage: 0
+  nextAttackDamageBonusStacks: 0
   isSleep: 0
   sleepRemaining: 0
   overHealShield: 0
+  xiuLiStunBuffConsumed: 0
+  chanXinCritConsumed: 0
+  lianFengConsecutiveStacks: 0
 --- !u!222 &3529345906889721010
 CanvasRenderer:
   m_ObjectHideFlags: 0
