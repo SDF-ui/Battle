@@ -4,14 +4,14 @@
             "outputFile": "com.DefaultCompany.MengHuan.launcher-mergeReleaseResources-3:/values-v31/values-v31.xml",
             "map": [
                 {
-                    "source": "C:\\WorkSpace\\Unity\\Battle\\Library\\Bee\\Android\\Prj\\Mono2x\\Gradle\\unityLibrary\\build\\intermediates\\packaged_res\\release\\values-v31\\values-v31.xml",
+                    "source": "C:\\WorkSpace\\File\\Battle\\Library\\Bee\\Android\\Prj\\Mono2x\\Gradle\\unityLibrary\\build\\intermediates\\packaged_res\\release\\values-v31\\values-v31.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
                         "startOffsets": "55",
-                        "endLines": "8",
+                        "endLines": "7",
                         "endColumns": "10",
-                        "endOffsets": "614"
+                        "endOffsets": "539"
                     }
                 }
             ]
