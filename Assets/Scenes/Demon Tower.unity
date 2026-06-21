@@ -546,7 +546,7 @@ MonoBehaviour:
   joystick: {fileID: 711253996}
   moveSpeed: 800
   animator: {fileID: 0}
-  enemyDatabase: {fileID: 11400000, guid: 6db90114cd64bc4438fea497f7f7cd77, type: 2}
+  enemyDatabase: {fileID: 11400000, guid: 951abb6189928d24d9eb9c7f0d8ebec6, type: 2}
 --- !u!95 &97481016
 Animator:
   serializedVersion: 5

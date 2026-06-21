@@ -4,145 +4,148 @@
 4    package="com.unity3d.player" >
 5
 6    <uses-sdk android:minSdkVersion="22" />
-6-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml
+6-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml
 7
 8    <uses-permission android:name="android.permission.INTERNET" />
-8-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:3:3-65
-8-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:3:20-62
+8-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:3:3-65
+8-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:3:20-62
 9
 10    <uses-feature android:glEsVersion="0x00030000" />
-10-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:4:3-52
-10-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:4:17-49
+10-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:4:3-52
+10-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:4:17-49
 11    <uses-feature
-11-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:3-91
+11-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:3-91
 12        android:name="android.hardware.vulkan.version"
-12-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:17-63
+12-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:17-63
 13        android:required="false" />
-13-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:64-88
+13-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:64-88
 14    <uses-feature
-14-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:3-88
+14-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:3-88
 15        android:name="android.hardware.touchscreen"
-15-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:17-60
+15-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:17-60
 16        android:required="false" />
-16-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:61-85
+16-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:61-85
 17    <uses-feature
-17-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:3-99
+17-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:3-99
 18        android:name="android.hardware.touchscreen.multitouch"
-18-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:17-71
+18-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:17-71
 19        android:required="false" />
-19-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:72-96
+19-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:72-96
 20    <uses-feature
-20-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:3-108
+20-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:3-108
 21        android:name="android.hardware.touchscreen.multitouch.distinct"
-21-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:17-80
+21-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:17-80
 22        android:required="false" />
-22-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:81-105
+22-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:81-105
 23
-24    <application android:extractNativeLibs="true" >
-24-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:3-27:17
-24-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:16-48
-25        <meta-data
-25-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:5-69
-26            android:name="unity.splash-mode"
-26-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:16-48
-27            android:value="0" />
-27-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:49-66
-28        <meta-data
-28-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:5-74
-29            android:name="unity.splash-enable"
-29-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:16-50
-30            android:value="True" />
-30-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:51-71
-31        <meta-data
-31-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:5-78
-32            android:name="unity.launch-fullscreen"
-32-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:16-54
-33            android:value="True" />
-33-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:55-75
-34        <meta-data
-34-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:5-84
-35            android:name="unity.render-outside-safearea"
-35-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:16-60
-36            android:value="True" />
-36-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:61-81
-37        <meta-data
-37-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:5-81
-38            android:name="notch.config"
-38-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:16-43
-39            android:value="portrait|landscape" />
-39-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:44-78
-40        <meta-data
-40-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:5-84
-41            android:name="unity.auto-report-fully-drawn"
-41-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:16-60
-42            android:value="true" />
-42-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:61-81
-43
-44        <activity
-44-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:5-26:16
-45            android:name="com.unity3d.player.UnityPlayerActivity"
-45-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:15-68
-46            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
-46-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:185-366
-47            android:exported="true"
-47-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:437-460
-48            android:hardwareAccelerated="false"
-48-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:401-436
-49            android:launchMode="singleTask"
-49-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:153-184
-50            android:resizeableActivity="true"
-50-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:367-400
-51            android:screenOrientation="userLandscape"
-51-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:111-152
-52            android:theme="@style/UnityThemeSelector" >
-52-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:69-110
-53            <intent-filter>
-53-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:17:7-20:23
-54                <category android:name="android.intent.category.LAUNCHER" />
-54-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:9-69
-54-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:19-66
-55
-56                <action android:name="android.intent.action.MAIN" />
-56-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:9-61
-56-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:17-58
-57            </intent-filter>
-58
-59            <meta-data
-59-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:7-82
-60                android:name="unityplayer.UnityActivity"
-60-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:18-58
-61                android:value="true" />
-61-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:59-79
-62            <meta-data
-62-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:7-128
-63                android:name="WindowManagerPreference:FreeformWindowSize"
-63-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:18-75
-64                android:value="@string/FreeformWindowSize_tablet" />
-64-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:76-125
-65            <meta-data
-65-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:7-145
-66                android:name="WindowManagerPreference:FreeformWindowOrientation"
-66-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:18-82
-67                android:value="@string/FreeformWindowOrientation_landscape" />
-67-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:83-142
-68            <meta-data
-68-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:7-70
-69                android:name="notch_support"
-69-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:18-46
-70                android:value="true" />
-70-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:47-67
-71
-72            <layout
-72-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:7-129
-73                android:defaultHeight="1080px"
-73-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:45-75
-74                android:defaultWidth="2400px"
-74-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:15-44
-75                android:minHeight="300px"
-75-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:101-126
-76                android:minWidth="400px" />
-76-->C:\WorkSpace\Unity\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:76-100
-77        </activity>
-78    </application>
-79
-80</manifest>
+24    <application
+24-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:3-27:17
+25        android:enableOnBackInvokedCallback="true"
+25-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:16-58
+26        android:extractNativeLibs="true" >
+26-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:59-91
+27        <meta-data
+27-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:5-69
+28            android:name="unity.splash-mode"
+28-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:16-48
+29            android:value="0" />
+29-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:49-66
+30        <meta-data
+30-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:5-74
+31            android:name="unity.splash-enable"
+31-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:16-50
+32            android:value="True" />
+32-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:51-71
+33        <meta-data
+33-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:5-78
+34            android:name="unity.launch-fullscreen"
+34-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:16-54
+35            android:value="True" />
+35-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:55-75
+36        <meta-data
+36-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:5-84
+37            android:name="unity.render-outside-safearea"
+37-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:16-60
+38            android:value="True" />
+38-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:61-81
+39        <meta-data
+39-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:5-81
+40            android:name="notch.config"
+40-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:16-43
+41            android:value="portrait|landscape" />
+41-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:44-78
+42        <meta-data
+42-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:5-84
+43            android:name="unity.auto-report-fully-drawn"
+43-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:16-60
+44            android:value="true" />
+44-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:61-81
+45
+46        <activity
+46-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:5-26:16
+47            android:name="com.unity3d.player.UnityPlayerActivity"
+47-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:15-68
+48            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
+48-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:185-366
+49            android:exported="true"
+49-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:437-460
+50            android:hardwareAccelerated="false"
+50-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:401-436
+51            android:launchMode="singleTask"
+51-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:153-184
+52            android:resizeableActivity="true"
+52-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:367-400
+53            android:screenOrientation="userLandscape"
+53-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:111-152
+54            android:theme="@style/UnityThemeSelector" >
+54-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:16:69-110
+55            <intent-filter>
+55-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:17:7-20:23
+56                <category android:name="android.intent.category.LAUNCHER" />
+56-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:9-69
+56-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:19-66
+57
+58                <action android:name="android.intent.action.MAIN" />
+58-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:9-61
+58-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:17-58
+59            </intent-filter>
+60
+61            <meta-data
+61-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:7-82
+62                android:name="unityplayer.UnityActivity"
+62-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:18-58
+63                android:value="true" />
+63-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:59-79
+64            <meta-data
+64-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:7-128
+65                android:name="WindowManagerPreference:FreeformWindowSize"
+65-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:18-75
+66                android:value="@string/FreeformWindowSize_tablet" />
+66-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:76-125
+67            <meta-data
+67-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:7-145
+68                android:name="WindowManagerPreference:FreeformWindowOrientation"
+68-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:18-82
+69                android:value="@string/FreeformWindowOrientation_landscape" />
+69-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:83-142
+70            <meta-data
+70-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:7-70
+71                android:name="notch_support"
+71-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:18-46
+72                android:value="true" />
+72-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:47-67
+73
+74            <layout
+74-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:7-129
+75                android:defaultHeight="1080px"
+75-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:45-75
+76                android:defaultWidth="2400px"
+76-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:15-44
+77                android:minHeight="300px"
+77-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:101-126
+78                android:minWidth="400px" />
+78-->C:\WorkSpace\File\Battle\Library\Bee\Android\Prj\Mono2x\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:76-100
+79        </activity>
+80    </application>
+81
+82</manifest>

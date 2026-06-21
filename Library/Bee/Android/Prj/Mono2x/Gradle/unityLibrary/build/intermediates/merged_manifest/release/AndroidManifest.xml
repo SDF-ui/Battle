@@ -21,7 +21,9 @@
         android:name="android.hardware.touchscreen.multitouch.distinct"
         android:required="false" />
 
-    <application android:extractNativeLibs="true" >
+    <application
+        android:enableOnBackInvokedCallback="true"
+        android:extractNativeLibs="true" >
         <meta-data
             android:name="unity.splash-mode"
             android:value="0" />
